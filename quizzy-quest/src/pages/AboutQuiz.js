@@ -1,3 +1,5 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
 import { useEffect, useState } from "react";
 import { ProcessState } from "../utils/enums";
 import NavigationBar from "../components/NavigationBar";
@@ -6,10 +8,11 @@ import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
 import { BASE_URL, IMAGE_BASE_URL } from "../utils/constants";
 import { getHeader } from "../utils/func-utils";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
 
 export default function AboutQuiz() {
-    const [id, type] = useLoaderData();
+    const onNavigate = useNavigate();
+    const id = useLoaderData();
     const [quiz, setQuiz] = useState({});
     const [answers, setAnswers] = useState([]);
     const [modalState, setModalState] = useState(0);
@@ -17,7 +20,7 @@ export default function AboutQuiz() {
 
     const getQuiz = async () => {
         try {
-            const response = await fetch(BASE_URL + `/quiz-routes/get-created-quiz?quiz_id=${id}&type=${type}`, {
+            const response = await fetch(`${BASE_URL}/quiz-routes/get-created-quiz?quiz_id=${id}`, {
                 method: "GET",
                 headers: getHeader()
             });
@@ -29,7 +32,9 @@ export default function AboutQuiz() {
                     description: data.description,
                     topic: data.topic,
                     type: data.type,
-                    image_path: data.image_path
+                    image_path: data.image_path,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt
                 });
                 setAnswers(data.answers);
                 setProcess({state: ProcessState.Success, message: ""});
@@ -56,58 +61,75 @@ export default function AboutQuiz() {
                 }} />;
             case ProcessState.Success:
                 return (
-                    <div class="card">
-                        <div class="card-body">
-                            <div className="row m-4">
-                                <div className="col d-flex align-items-center justify-content-center">
-                                    <img src={`${IMAGE_BASE_URL}${quiz.image_path}`} width="80%" className="border border-primary border-5" alt={quiz.name} />
+                    <div>
+                        <h2 className="text-center p-3">About Quiz</h2>
+                        <div className="card m-4 shadow-sm">
+                            <div className="card-body">
+                                <div className="row m-4">
+                                    <div className="col d-flex align-items-center justify-content-center">
+                                        <img src={`${IMAGE_BASE_URL}${quiz.image_path}`} width="80%" className="border border-primary border-5" alt={quiz.name} />
+                                    </div>
+                                    <div className="col">
+                                        <p className="fs-4 fw-bold">Title:</p>
+                                        <p className="fs-5">{quiz.name}</p>
+                                        <p className="fs-4 fw-bold">Description:</p>
+                                        <p className="fs-5">{quiz.description}</p>
+                                        <p className="fs-4 fw-bold">Topic:</p>
+                                        <p className="fs-5">{quiz.topic}</p>
+                                        <p className="fs-4 fw-bold">Type:</p>
+                                        <p className="fs-5">{quiz.type}</p>
+                                        <p className="fs-4 fw-bold">Date Created:</p>
+                                        <p className="fs-5">{quiz.createdAt}</p>
+                                        <p className="fs-4 fw-bold">Date Updated:</p>
+                                        <p className="fs-5">{quiz.updatedAt}</p>
+                                        <button
+                                            role="button"
+                                            type="button"
+                                            className="btn btn-primary btn-lg"
+                                            onClick={() => { onNavigate(`/edit-quiz/${quiz.quiz_id}`) }}
+                                        >EDIT</button>
+                                    </div>
                                 </div>
-                                <div className="col">
-                                    <p className="fs-4 fw-bold">Title:</p>
-                                    <p className="fs-5">{quiz.name}</p>
-                                    <p className="fs-4 fw-bold">Description:</p>
-                                    <p className="fs-5">{quiz.description}</p>
-                                    <p className="fs-4 fw-bold">Topic:</p>
-                                    <p className="fs-5">{quiz.topic}</p>
-                                    <p className="fs-4 fw-bold">Type:</p>
-                                    <p className="fs-5">{quiz.type}</p>
-                                </div>
+                                {answers.length > 0 ? (
+                                    <table className="table text-white mb-0">
+                                        <thead>
+                                            <tr>
+                                            <th scope="col">Users Answered</th>
+                                            <th scope="col">Total Points</th>
+                                            <th scope="col">Time Answered</th>
+                                            <th scope="col">View</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {answers.map((answer, index) => {
+                                                return (
+                                                    <tr className="fw-normal">
+                                                        <th>
+                                                            <img src={`${IMAGE_BASE_URL}${answer.user.image_path}`} alt={answer.user.name} width={50} className="rounded-circle" />
+                                                            <span className="ms-2">{answer.user.name}</span>
+                                                        </th>
+                                                        <td className="align-middle">
+                                                            <span>{answer.points.reduce((acc, next) => acc + next)}</span>
+                                                        </td>
+                                                        <td className="align-middle">
+                                                            <span>{answer.createdAt}</span>
+                                                        </td>
+                                                        <td className="align-middle">
+                                                            <button
+                                                                className="btn btn-primary"
+                                                                type="button"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#staticBackdrop"
+                                                                onClick={() => { setModalState(index); }}
+                                                            >View</button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                ) : <div><h1 className="text-center">No users have answered your quiz.</h1></div>}
                             </div>
-                            {answers.length > 0 ? (
-                                <table class="table text-white mb-0">
-                                    <thead>
-                                        <tr>
-                                        <th scope="col">Users Answered</th>
-                                        <th scope="col">Total Points</th>
-                                        <th scope="col">View</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {answers.map((answer, index) => {
-                                            return (
-                                                <tr class="fw-normal">
-                                                    <th>
-                                                        <img src={`${IMAGE_BASE_URL}${answer.user.image_path}`} alt={answer.user.name} width={50} className="rounded-circle" />
-                                                        <span className="ms-2">{answer.user.name}</span>
-                                                    </th>
-                                                    <td class="align-middle">
-                                                        <span>{answer.points.reduce((acc, next) => acc + next)}</span>
-                                                    </td>
-                                                    <td class="align-middle">
-                                                        <button
-                                                            className="btn btn-primary"
-                                                            type="button"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#staticBackdrop"
-                                                            onClick={() => { setModalState(index); }}
-                                                        >View</button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            ) : <div><h1 className="text-center">No users have answered your quiz.</h1></div>}
                         </div>
                     </div>
                 );

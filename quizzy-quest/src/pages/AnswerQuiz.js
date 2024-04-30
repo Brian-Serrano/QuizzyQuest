@@ -17,9 +17,10 @@ import ErrorState from "../components/ErrorState";
 import MyModal from "../components/MyModal";
 import MyToast from "../components/MyToast";
 import { useLoaderData } from "react-router-dom";
+import Spinner from "../components/Spinner";
 
 export default function AnswerQuiz() {
-    const id = useLoaderData();
+    const [id, unauth] = useLoaderData();
     const onNavigate = useNavigate();
     const [item, setItem] = useState(0);
     const [inIntro, setInIntro] = useState(true);
@@ -28,7 +29,7 @@ export default function AnswerQuiz() {
     const [process, setProcess] = useState({state: ProcessState.Loading, message: ""});
 
     const [modalState, setModalState] = useState({
-        bodyText: "",
+        bodyText: <p></p>,
         onApplyClick: () => {},
         onCancelClick: () => {},
         titleText: "",
@@ -38,9 +39,9 @@ export default function AnswerQuiz() {
 
     const getQuiz = async () => {
         try {
-            const response = await fetch(BASE_URL + "/quiz-routes/get-quiz?quiz_id=" + id, {
+            const response = await fetch(`${BASE_URL}/quiz${unauth === "unauthorized" ? "-unauth-" : "-"}routes/get-quiz?quiz_id=${id}`, {
                 method: "GET",
-                headers: getHeader()
+                headers: unauth === "unauthorized" ? {"Content-Type": "application/json"} : getHeader()
             });
             const data = await response.json();
             if (response.ok) {
@@ -52,11 +53,13 @@ export default function AnswerQuiz() {
                     topic: data.topic,
                     type: data.type,
                     image_path: data.image_path,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
                     error: "",
-                    visibility: false
+                    visibility: false,
+                    buttonEnabled: true
                 });
                 setQuestions(data.questions.map(question => {
-                    console.log(typeof question.points);
                     return {...question, user_answer: "", points_got: 0, time_spent: 0, is_answered: false};
                 }));
                 setProcess({state: ProcessState.Success, message: ""});
@@ -73,43 +76,47 @@ export default function AnswerQuiz() {
     }, []);
 
     const setToast = (error) => {
-        setQuiz({...quiz, error: error, visibility: true});
+        setQuiz({...quiz, error: error, visibility: true, buttonEnabled: true});
         setTimeout(() => {
             setQuiz({...quiz, visibility: false});
         }, 10000);
     };
 
     const finishQuiz = async (questions) => {
+        setQuiz(prev => ({...prev, buttonEnabled: false}));
+
         try {
-            const response = await fetch(BASE_URL + "/quiz-routes/answer-quiz", {
+            const response = await fetch(`${BASE_URL}/quiz${unauth === "unauthorized" ? "-unauth-" : "-"}routes/answer-quiz`, {
                 method: "POST",
-                headers: getHeader(),
+                headers: unauth === "unauthorized" ? {"Content-Type": "application/json"} : getHeader(),
                 body: JSON.stringify({
                     quiz_id: quiz.quiz_id,
                     type: quiz.type,
                     points: questions.map(q => q.points_got),
                     answers: questions.map(q => q.user_answer),
                     remaining_times: questions.map(q => q.timer - q.time_spent),
-                    questions_id: questions.map(q => q.question_id)
+                    questions: questions.map(q => q.question)
                 })
             });
             const data = await response.json();
             if (response.ok) {
                 setModalState({
-                    bodyText: `Congratulations! Your total points is ${questions.reduce((acc, next) => acc + next.points_got, 0)}.`,
+                    bodyText: <p>Congratulations! Your total points is {questions.reduce((acc, next) => acc + next.points_got, 0)}.</p>,
                     onApplyClick: () => {
                         setModalState({...modalState, visibility: false});
                         onNavigate("/");
                     },
                     onCancelClick: () => {
                         setModalState({...modalState, visibility: false});
-                        onNavigate("/");
                     },
                     titleText: "Quiz Completed",
                     buttonText: "Dashboard",
                     visibility: true
                 });
-            } else {
+                setQuiz(prev => ({...prev, buttonEnabled: true}));
+            } else if (response.status >= 400 && response.status <= 499) {
+                setToast(data.message);
+            } else if (response.status >= 500 && response.status <= 599) {
                 setToast(data.error);
             }
         } catch (error) {
@@ -117,7 +124,6 @@ export default function AnswerQuiz() {
         }
     };
     useEffect(() => {
-        console.log(questions);
         if (questions.length > 0 && questions.every(question => question.is_answered)) {
             finishQuiz(questions);
         }
@@ -125,21 +131,23 @@ export default function AnswerQuiz() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setQuestions(prev => prev.map((question, idx) => {
-                if (item === idx && !question.is_answered) {
-                    if (question.time_spent < question.timer) {
-                        return {...question, time_spent: question.time_spent + 1};
+            if (!inIntro) {
+                setQuestions(prev => prev.map((question, idx) => {
+                    if (item === idx && !question.is_answered) {
+                        if (question.time_spent < question.timer) {
+                            return {...question, time_spent: question.time_spent + 1};
+                        } else {
+                            return {...question, is_answered: true, user_answer: ""};
+                        }
                     } else {
-                        return {...question, is_answered: true};
+                        return question;
                     }
-                } else {
-                    return question;
-                }
-            }));
+                }));
+            }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [item]);
+    }, [item, inIntro]);
 
     const getMenu = (type) => {
         switch (type) {
@@ -244,7 +252,7 @@ export default function AnswerQuiz() {
                     quiz={quiz}
                     onStartClick={() => { setInIntro(false); }}
                     onProfile={() => {
-                        onNavigate("/profile/" + quiz.user.id);
+                        onNavigate(`/profile/${quiz.user.id}`);
                     }}
                 /> : (
                     <div className="p-4 container">
@@ -284,9 +292,10 @@ export default function AnswerQuiz() {
                                         <button
                                             className="btn btn-warning col-12 fs-3"
                                             type="button"
+                                            disabled={!quiz.buttonEnabled}
                                             onClick={() => {
                                                 setModalState({
-                                                    bodyText: "Are you sure, you want to finish the quiz? The answers you enter will save and any unanswered questions will be wrong.",
+                                                    bodyText: <p>Are you sure, you want to finish the quiz? The answers you enter will save and any unanswered questions will be wrong.</p>,
                                                     onApplyClick: () => {
                                                         setModalState({...modalState, visibility: false});
                                                         finishQuiz(questions);
@@ -299,7 +308,7 @@ export default function AnswerQuiz() {
                                                     visibility: true
                                                 });
                                             }}
-                                        >Finish Quiz</button>
+                                        >{quiz.buttonEnabled ? "Finish Quiz" : <Spinner />}</button>
                                     </div>
                                 </div>
                             </div>
@@ -311,7 +320,16 @@ export default function AnswerQuiz() {
 
     return (
         <div>
-            <NavigationBar />
+            {unauth === "unauthorized" ? (
+                <div>
+                    <nav class="navbar navbar-expand-lg navbar-warning bg-warning fixed-top">
+                        <div class="container-fluid">
+                            <span class="navbar-brand">QuizzyQuest</span>
+                        </div>
+                    </nav>
+                    <div style={{marginTop: "56px"}}></div>
+                </div>
+            ) : <NavigationBar />}
             {modalState.visibility ? <MyModal modalState={modalState} /> : <div></div>}
             {getProcess(process)}
             {quiz.visibility ? <MyToast error={quiz.error} /> : <div></div>}

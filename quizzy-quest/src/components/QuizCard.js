@@ -12,6 +12,7 @@ export default function QuizCard(props) {
                         <div className="flex-grow-1">
                             <h5 className="card-title">{props.quiz.name}</h5>
                             <h6 className="card-subtitle mb-2 text-muted">{props.quiz.topic}</h6>
+                            <p className="card-subtitle mb-2 text-muted">{props.quiz.updatedAt}</p>
                         </div>
                         <div onClick={props.onProfileNavigate} className="d-flex flex-column align-items-center justify-content-center">
                             <img src={`${IMAGE_BASE_URL}${props.quiz.user.image_path}`} width={50} className="rounded-circle" alt={props.quiz.user.name} />

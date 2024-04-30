@@ -10,20 +10,12 @@ const PORT = 4000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors({origin: "http://localhost:3000"}));
 app.use(express.static("images"));
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if ("http://localhost:3000" === origin) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    }
-}));
-
 app.use((req, res, next) => {
-    if (["/api/auth-routes/log-in", "/api/auth-routes/sign-up"].includes(req.path)) {
+    const route = /access-routes|quiz-routes|user-routes/;
+    if (!route.test(req.path)) {
         return next();
     }
 

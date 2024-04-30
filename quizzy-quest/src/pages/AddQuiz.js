@@ -1,12 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import InputField from "../components/InputField";
-import RadioInput from "../components/RadioInput";
-import QuizTextArea from "../components/QuizTextArea";
-import MultipleChoiceInput from "../components/MultipleChoiceInput";
-import IdentificationInput from "../components/IdentificationInput";
-import TrueOrFalseInput from "../components/TrueOrFalseInput";
 import { useState } from 'react';
 import { QuizType } from "../utils/enums";
 import { BASE_URL } from "../utils/constants";
@@ -14,6 +8,10 @@ import { MIN_ITEMS, MAX_ITEMS } from "../utils/constants";
 import { getFormHeader, getImage } from "../utils/func-utils";
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../components/NavigationBar";
+import EditQuizMenu from "../components/EditQuizMenu";
+import GetQuizInput from "../components/GetQuizInput";
+import AddItemButton from "../components/AddItemButton";
+import Spinner from "../components/Spinner";
 
 export default function AddQuiz() {
     const onNavigate = useNavigate();
@@ -40,7 +38,8 @@ export default function AddQuiz() {
         topic: "",
         type: QuizType.MultipleChoice,
         visibility: "public",
-        errors: []
+        errors: [],
+        buttonEnabled: true
     });
 
     const [questionsState, setQuestionsState] = useState(
@@ -50,6 +49,8 @@ export default function AddQuiz() {
     const [image, setImage] = useState({data: null, src: ""});
 
     const addQuiz = async () => {
+        setAddQuizState(prev => ({...prev, buttonEnabled: false}));
+
         try {
             const formData = new FormData();
             formData.append('data', JSON.stringify({
@@ -93,7 +94,7 @@ export default function AddQuiz() {
             }));
             formData.append('file', image.data);
 
-            const response = await fetch(BASE_URL + "/quiz-routes/add-quiz", {
+            const response = await fetch(`${BASE_URL}/quiz-routes/add-quiz`, {
                 method: "POST",
                 headers: getFormHeader(),
                 body: formData
@@ -102,12 +103,12 @@ export default function AddQuiz() {
             if (response.ok) {
                 onNavigate("/");
             } else if (response.status >= 400 && response.status <= 499) {
-                setAddQuizState({...addQuizState, errors: data});
+                setAddQuizState({...addQuizState, errors: data, buttonEnabled: true});
             } else if (response.status >= 500 && response.status <= 599) {
-                setAddQuizState({...addQuizState, errors: [data.error]});
+                setAddQuizState({...addQuizState, errors: [data.error], buttonEnabled: true});
             }
         } catch (error) {
-            setAddQuizState({...addQuizState, errors: [error.toString()]});
+            setAddQuizState({...addQuizState, errors: [error.toString()], buttonEnabled: true});
         }
     };
 
@@ -130,72 +131,6 @@ export default function AddQuiz() {
         });
     };
 
-    const menu = questionsState.map((question, index) => {
-        const removeItem = () => {
-            if (questionsState.length > MIN_ITEMS) {
-                setQuestionsState(prev => {
-                    return prev.filter((_, idx) => index !== idx);
-                });
-            }
-        };
-        const changeQuestion = (event) => {
-            changeQuestions(event, "question", index);
-        };
-        const changeExplanation = (event) => {
-            changeQuestions(event, "explanation", index);
-        };
-        const changeTimer = (event) => {
-            changeQuestions(event, "timer", index);
-        };
-        const changePoints = (event) => {
-            changeQuestions(event, "points", index);
-        };
-        switch (addQuizState.type) {
-            case QuizType.MultipleChoice:
-                return <MultipleChoiceInput
-                    key={index}
-                    item={index}
-                    question={question}
-                    onQuestionChange={changeQuestion}
-                    onChoiceChange={[
-                        (event) => { changeQuestions(event, "letter_a", index); },
-                        (event) => { changeQuestions(event, "letter_b", index); },
-                        (event) => { changeQuestions(event, "letter_c", index); },
-                        (event) => { changeQuestions(event, "letter_d", index); }
-                    ]}
-                    onAnswerChange={(event) => { changeQuestions(event, "mcAnswer", index); }}
-                    onExplanationChange={changeExplanation}
-                    onTimerChange={changeTimer}
-                    onPointsChange={changePoints}
-                    removeItem={removeItem}
-                />;
-            case QuizType.Identification:
-                return <IdentificationInput
-                    key={index}
-                    item={index}
-                    question={question}
-                    onQuestionChange={changeQuestion}
-                    onAnswerChange={(event) => { changeQuestions(event, "iAnswer", index); }}
-                    onExplanationChange={changeExplanation}
-                    onTimerChange={changeTimer}
-                    onPointsChange={changePoints}
-                    removeItem={removeItem}
-                />;
-            case QuizType.TrueOrFalse:
-                return <TrueOrFalseInput
-                    key={index}
-                    item={index}
-                    question={question}
-                    onQuestionChange={changeQuestion}
-                    onAnswerChange={(event) => { changeQuestions(event, "tofAnswer", index); }}
-                    onExplanationChange={changeExplanation}
-                    onTimerChange={changeTimer}
-                    onPointsChange={changePoints}
-                    removeItem={removeItem}
-                />;
-        }
-    });
-
     return (
         <div>
             <NavigationBar />
@@ -205,87 +140,39 @@ export default function AddQuiz() {
                         <h2 className="m-0">Create New Quiz</h2>
                     </div>
                     <div>
-                        <button type="button" className="btn btn-primary" onClick={addQuiz}>Create</button>
+                        <button
+                            type="button"
+                            disabled={!addQuizState.buttonEnabled}
+                            className="btn btn-primary"
+                            onClick={addQuiz}
+                        >{addQuizState.buttonEnabled ? "Create" : <Spinner />}</button>
                     </div>
-                </div>
-                <div className="card m-4 shadow-sm">
-                    <div className="card-body m-4">
-                        <label className="form-label p-1 h5">Pick Quiz Image</label>
-                        <input
-                            type="file"
-                            className="form-control"
-                            name="image"
-                            onChange={(event) => {
-                                getImage(event.target.files[0], (blob, src) => {
-                                    setImage({data: blob, src: src});
-                                }, {width: 300, height: 200});
-                            }}
-                            accept=".png,.jpeg,.jpg,.webp"
-                        />
-                        {image.src.length > 0 ? <img className=" border border-2 border-primary m-4" src={image.src} width={300} height={200} /> : <span></span>}
-                        <InputField
-                            name="title"
-                            type="text"
-                            placeholder="Title"
-                            value={addQuizState.title}
-                            onChange={(event) => { changeQuizInfo(event, "title"); }}
-                        />
-                        <div className="row">
-                            <QuizTextArea
-                                name="description"
-                                placeholder="Description"
-                                value={addQuizState.description}
-                                onChange={(event) => { changeQuizInfo(event, "description"); }}
-                            />
-                            <div className="col">
-                                <InputField
-                                    name="topic"
-                                    type="text"
-                                    placeholder="Topic"
-                                    value={addQuizState.topic}
-                                    onChange={(event) => { changeQuizInfo(event, "topic"); }}
-                                />
-                                <label className="form-label p-1 h5">Type</label>
-                                <select
-                                    name="type"
-                                    className="form-select"
-                                    onChange={(event) => { changeQuizInfo(event, "type"); }}
-                                    value={addQuizState.type}
-                                >{
-                                    Object.values(QuizType).map(l => <option value={l} key={l}>{l}</option>)
-                                }</select>
-                                <label className="form-label p-1 h5">Visibility</label>
-                                <div className="row">
-                                    <RadioInput
-                                        name="visibility"
-                                        value="public"
-                                        checked={addQuizState.visibility === "public"}
-                                        onChange={changeVisibility}
-                                    />
-                                    <RadioInput
-                                        name="visibility"
-                                        value="private"
-                                        checked={addQuizState.visibility === "private"}
-                                        onChange={changeVisibility}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>{menu}</div>
-                <div className="m-4">
-                    <button
-                        type="button"
-                        className="btn btn-outline-dark btn-lg col-12"
-                        onClick={() => {
-                            if (questionsState.length < MAX_ITEMS) {
-                                setQuestionsState(prev => [...prev, createItem()]);
-                            }
-                        }}
-                    ><i className="bi bi-plus"></i>Add Item</button>
                 </div>
                 <div>{addQuizState.errors.map(err => <p className="text-danger" key={err}>{err}</p>)}</div>
+                <EditQuizMenu
+                    image={image}
+                    quizState={addQuizState}
+                    pickImage={(event) => {
+                        getImage(event.target.files[0], (blob, src) => {
+                            setImage({data: blob, src: src});
+                        }, {width: 300, height: 200});
+                    }}
+                    changeQuizInfo={changeQuizInfo}
+                    changeVisibility={changeVisibility}
+                />
+                <GetQuizInput
+                    questionsState={questionsState}
+                    quizState={addQuizState}
+                    setQuestionsState={setQuestionsState}
+                    changeQuestions={changeQuestions}
+                />
+                <AddItemButton
+                    onClick={() => {
+                        if (questionsState.length < MAX_ITEMS) {
+                            setQuestionsState(prev => [...prev, createItem()]);
+                        }
+                    }}
+                />
             </form>
         </div>
     );

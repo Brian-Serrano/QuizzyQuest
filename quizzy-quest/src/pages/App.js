@@ -10,22 +10,46 @@ import Profile from "./Profile";
 import Settings from "./Settings";
 import PageNotFound from "./PageNotFound";
 import { isExpired, decodeToken } from "react-jwt";
+import { BASE_URL } from "../utils/constants";
+import { getHeader } from "../utils/func-utils";
+import EditQuiz from "./EditQuiz";
+import { secureStorage } from "../utils/secureStorage";
 
 export default function App() {
   const checkAuthentication = () => {
-    const token = localStorage.getItem('token');
-    if (!decodeToken(token) || isExpired(token)) {
+    const user = secureStorage.getItem('user');
+    if (!user || !decodeToken(user.token) || isExpired(user.token)) {
       return redirect("/sign-up");
     }
     return null;
   };
 
-  const getIdAndcheckAuthentication = ({ params }) => {
-    const token = localStorage.getItem('token');
-    if (!decodeToken(token) || isExpired(token)) {
+  const protectAboutQuiz = async ({ params }) => {
+    const user = secureStorage.getItem('user');
+    if (!user || !decodeToken(user.token) || isExpired(user.token)) {
       return redirect("/sign-up");
     }
-    return params.id;
+
+    const accessAboutQuiz = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/access-routes/access-about-quiz?quiz_id=${params.id}&user_id=${user.id}`, {
+          method: "GET",
+          headers: getHeader()
+        });
+        return await response.json();
+      } catch (error) {
+        return {is_allowed: false, message: error.toString()};
+      }
+    };
+
+    const response = await accessAboutQuiz();
+
+    if (response.is_allowed) {
+      return params.id;
+    } else {
+      alert(response.message);
+      return redirect("/");
+    }
   };
 
   const router = createBrowserRouter([
@@ -45,24 +69,69 @@ export default function App() {
     },
     {
       path: "/answer-quiz/:id",
-      element: <AnswerQuiz />,
-      loader: getIdAndcheckAuthentication
+      children: [
+        {
+          path: ":unauth",
+          element: <AnswerQuiz />,
+          loader: async ({ params }) => {
+            if (params.unauth === "unauthorized") {
+              return [params.id, params.unauth];
+            }
+          }
+        },
+        {
+          path: "",
+          element: <AnswerQuiz />,
+          loader: async ({ params }) => {
+            const user = secureStorage.getItem('user');
+            if (!user || !decodeToken(user.token) || isExpired(user.token)) {
+              return redirect("/sign-up");
+            }
+
+            const accessAnswerQuiz = async () => {
+              try {
+                const response = await fetch(`${BASE_URL}/access-routes/access-answer-quiz?quiz_id=${params.id}&user_id=${user.id}`, {
+                  method: "GET",
+                  headers: getHeader()
+                });
+                return await response.json();
+              } catch (error) {
+                return {is_allowed: false, message: error.toString()};
+              }
+            };
+
+            const response = await accessAnswerQuiz();
+
+            if (response.is_allowed) {
+              return [params.id, ""];
+            } else {
+              alert(response.message);
+              return redirect("/");
+            }
+          }
+        }
+      ]
     },
     {
-      path: "/about-quiz/:type/:id",
+      path: "/about-quiz/:id",
       element: <AboutQuiz />,
-      loader: ({ params }) => {
-        const token = localStorage.getItem('token');
-        if (!decodeToken(token) || isExpired(token)) {
-          return redirect("/sign-up");
-        }
-        return [params.id, params.type];
-      }
+      loader: protectAboutQuiz
+    },
+    {
+      path: "edit-quiz/:id",
+      element: <EditQuiz />,
+      loader: protectAboutQuiz
     },
     {
       path: "/profile/:id",
       element: <Profile />,
-      loader: getIdAndcheckAuthentication
+      loader: ({ params }) => {
+        const user = secureStorage.getItem('user');
+        if (!user || !decodeToken(user.token) || isExpired(user.token)) {
+          return redirect("/sign-up");
+        }
+        return params.id;
+      }
     },
     {
       path: "/settings",

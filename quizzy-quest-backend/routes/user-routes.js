@@ -7,7 +7,8 @@ const {
     validateRole,
     createDateForFile,
     userImagePath,
-    relativePath
+    relativePath,
+    formatDate
 } = require("../utils");
 const multer = require("multer");
 const bcrypt = require("bcrypt");
@@ -34,21 +35,14 @@ router.post("/change-image", upload.single("file"), async (req, res) => {
         if (req.file) {
             const filename = `${userImagePath}/${req.file.filename}`
             const user = await User.findOne({where: {id: res.locals.userId}});
-            await User.update({
-                image_path: filename
-            }, {
-                where: {
-                    id: res.locals.userId
-                }
-            });
+            await User.update({image_path: filename}, {where: {id: res.locals.userId}});
             fs.unlinkSync(relativePath + user.image_path);
-            res.status(201).json({message: "Image successfully saved", image_path: filename});
+            return res.status(201).json({message: "Image successfully saved", image_path: filename});
         } else {
-            res.status(400).json({message: "Invalid image"});
+            return res.status(400).json({message: "Invalid image"});
         }
     } catch (error) {
-        console.log(error);
-        res.status(500).json({error: error.toString()});
+        return res.status(500).json({error: error.toString()});
     }
 });
 
@@ -64,17 +58,13 @@ router.post("/change-password", async (req, res) => {
         if (validation.isValid) {
             await User.update({
                 password: await bcrypt.hash(req.body.newPassword, process.env.SALT)
-            }, {
-                where: {
-                    id: res.locals.userId
-                }
-            });
-            res.status(201).json({message: validation.message});
+            }, {where: {id: res.locals.userId}});
+            return res.status(201).json({message: validation.message});
         } else {
-            res.status(400).json({message: validation.message});
+            return res.status(400).json({message: validation.message});
         }
     } catch (error) {
-        res.status(500).json({error: error.toString()});
+        return res.status(500).json({error: error.toString()});
     }
 });
 
@@ -82,19 +72,13 @@ router.post("/change-name", async (req, res) => {
     try {
         const validation = validateUsername(req.body.name);
         if (validation.isValid) {
-            await User.update({
-                name: req.body.name
-            }, {
-                where: {
-                    id: res.locals.userId
-                }
-            });
-            res.status(201).json({message: validation.message, name: req.body.name});
+            await User.update({name: req.body.name}, {where: {id: res.locals.userId}});
+            return res.status(201).json({message: validation.message, name: req.body.name});
         } else {
-            res.status(400).json({message: validation.message});
+            return res.status(400).json({message: validation.message});
         }
     } catch (error) {
-        res.status(500).json({error: error.toString()});
+        return res.status(500).json({error: error.toString()});
     }
 });
 
@@ -102,34 +86,30 @@ router.post("/change-role", async (req, res) => {
     try {
         const validation = validateRole(req.body.role);
         if (validation.isValid) {
-            await User.update({
-                role: req.body.role
-            }, {
-                where: {
-                    id: res.locals.userId
-                }
-            });
-            res.status(201).json({message: validation.message});
+            await User.update({role: req.body.role}, {where: {id: res.locals.userId}});
+            return res.status(201).json({message: validation.message});
         } else {
-            res.status(400).json({message: validation.message});
+            return res.status(400).json({message: validation.message});
         }
     } catch (error) {
-        res.status(500).json({error: error.toString()});
+        return res.status(500).json({error: error.toString()});
     }
 });
 
 router.get("/get-user", async (req, res) => {
     try {
-        const user = await User.findOne({where: {id: req.query.id}});
-        res.status(200).json({
+        const user = await User.findOne({where: {id: res.locals.userId}});
+        return res.status(200).json({
             id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,
-            image_path: user.image_path
+            image_path: user.image_path,
+            createdAt: formatDate(user.createdAt),
+            updatedAt: formatDate(user.updatedAt)
         });
     } catch (error) {
-        res.status(500).json({error: error.toString()});
+        return res.status(500).json({error: error.toString()});
     }
 });
 

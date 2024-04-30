@@ -24,7 +24,7 @@ export default function Dashboard() {
 
     const apiCallWrapper = async (creator, type) => {
         try {
-            const response = await fetch(BASE_URL + "/quiz-routes/get-all" + creator + "quiz?type=" + type, {
+            const response = await fetch(`${BASE_URL}/quiz-routes/get-all${creator}quiz?type=${type}`, {
                 method: "GET",
                 headers: getHeader()
             });
@@ -37,7 +37,7 @@ export default function Dashboard() {
         } catch (error) {
             return {data: [], process: ProcessState.Error, error: error.toString()};
         }
-    }
+    };
 
     const scmc = async () => {
         setCreatedMultipleChoice(emptyData());
@@ -106,11 +106,11 @@ export default function Dashboard() {
         });
     }, []);
 
-    const onProfileNavigate = (userId) => onNavigate("/profile/" + userId);
+    const onProfileNavigate = (userId) => onNavigate(`/profile/${userId}`);
 
-    const onQuizNavigate = (quizId) => onNavigate("/answer-quiz/" + quizId);
+    const onQuizNavigate = (quizId) => onNavigate(`/answer-quiz/${quizId}`);
 
-    const onAboutQuizNavigate = (quizId, type) => onNavigate("/about-quiz/" + type + "/" + quizId)
+    const onAboutQuizNavigate = (quizId) => onNavigate(`/about-quiz/${quizId}`);
 
     const mapToQuizCard = (quiz, creator) => {
         return creator === Creator.All ? <QuizCard
@@ -119,13 +119,13 @@ export default function Dashboard() {
             navigate={() => onQuizNavigate(quiz.quiz_id)}
         /> : <QuizCreatorCard
             quiz={quiz}
-            navigate={() => onAboutQuizNavigate(quiz.quiz_id, quiz.type)}
+            navigate={() => onAboutQuizNavigate(quiz.quiz_id)}
         />;
-    }
+    };
 
     const getCreator = (creator, first, second) => {
         return creator === Creator.Self ? first : second;
-    }
+    };
 
     const checkProcess = (data, creator) => {
         switch (data.process) {
@@ -145,7 +145,7 @@ export default function Dashboard() {
                         </div>
                     );
         }
-    }
+    };
 
     const getMenu = (type, creator) => {
         switch(type) {
@@ -156,7 +156,7 @@ export default function Dashboard() {
             case QuizType.TrueOrFalse:
                 return checkProcess(getCreator(creator, createdTrueOrFalse, trueOrFalse), creator);
         }
-    }
+    };
 
     return (
         <div>

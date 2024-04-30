@@ -1,5 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
+import Spinner from "./Spinner";
 
 export default function SignInButtons(props) {
     return (
@@ -18,11 +19,7 @@ export default function SignInButtons(props) {
                     onClick={props.onSignIn}
                     disabled={!props.enabled}
                     className="btn btn-success col-12">
-                    {props.enabled ? props.second : (
-                        <div className="spinner-border" role="status">
-                            <span className="sr-only">Loading...</span>
-                        </div>
-                    )}
+                    {props.enabled ? props.second : <Spinner />}
                 </button>
             </div>
         </div>

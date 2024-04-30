@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import { logout } from "../utils/func-utils";
 import { IMAGE_BASE_URL } from "../utils/constants";
 import { useState } from "react";
+import { secureStorage } from "../utils/secureStorage";
 
 export default function NavigationBar() {
     const [dropdown, setDropdown] = useState("hide");
+    const user = secureStorage.getItem('user');
 
     return (
         <div>
@@ -33,18 +35,16 @@ export default function NavigationBar() {
                                 <span className="nav-link" role="button" onClick={() => {
                                     setDropdown(dropdown === "hide" ? "show" : "hide");
                                 }}>
-                                    <span>
-                                        {localStorage.getItem('name')}
-                                    </span>
+                                    <span>{user.name}</span>
                                     <img
-                                        src={`${IMAGE_BASE_URL}${localStorage.getItem('image_path')}`}
+                                        src={`${IMAGE_BASE_URL}${user.image_path}`}
                                         width={30}
                                         className="rounded-circle mx-2"
-                                        alt={localStorage.getItem('name')}
+                                        alt={user.name}
                                     />
                                 </span>
                                 <ul className={"dropdown-menu " + dropdown}>
-                                    <li><Link className="dropdown-item" to={`/profile/${localStorage.getItem('id')}`}>Profile</Link></li>
+                                    <li><Link className="dropdown-item" to={`/profile/${user.id}`}>Profile</Link></li>
                                     <li><Link className="dropdown-item" to="/sign-up" onClick={logout}>Log Out</Link></li>
                                 </ul>
                             </div>

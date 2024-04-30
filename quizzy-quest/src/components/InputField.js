@@ -13,7 +13,6 @@ export default function InputField(props) {
                 value={props.value}
                 onChange={props.onChange}
                 required />
-            {props.children}
         </div>
     )
 }

@@ -32,7 +32,7 @@ export default function CarouselInsideModal(props) {
                                         <img src={`${IMAGE_BASE_URL}${props.quiz.image_path}`} className="d-block w-100" alt={props.quiz.name} />
                                         <div className="carousel-caption d-md-block">
                                             <h5>{props.answer.answers[index]}</h5>
-                                            <p>{question.question}</p>
+                                            <p>{question}</p>
                                             <p>Points: {props.answer.points[index]}, Remaining Time: {props.answer.remaining_times[index]}</p>
                                         </div>
                                     </div>

@@ -8,9 +8,11 @@ import MyToast from "../components/MyToast";
 import NavigationBar from "../components/NavigationBar";
 import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
+import Spinner from "../components/Spinner";
+import { secureStorage } from "../utils/secureStorage";
 
 export default function Settings() {
-    const [accordions, setAccordions] = useState([true, true, true, true, true]);
+    const [accordions, setAccordions] = useState([true, true, true, true, true, true, true]);
     const [settingsState, setSettingsState] = useState({});
     const [process, setProcess] = useState({state: ProcessState.Loading, message: ""});
     const [message, setMessage] = useState({text: "", visibility: false});
@@ -18,7 +20,7 @@ export default function Settings() {
 
     const getUser = async () => {
         try {
-            const response = await fetch(BASE_URL + "/user-routes/get-user?id=" + localStorage.getItem('id'), {
+            const response = await fetch(`${BASE_URL}/user-routes/get-user`, {
                 method: "GET",
                 headers: getHeader()
             });
@@ -30,12 +32,18 @@ export default function Settings() {
                     email: data.email,
                     role: data.role,
                     image_path: data.image_path,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
                     currentPassword: "",
                     newPassword: "",
                     confirmPassword: "",
                     currentPasswordVisibility: "password",
                     newPasswordVisibility: "password",
-                    confirmPasswordVisibility: "password"
+                    confirmPasswordVisibility: "password",
+                    nameButtonEnabled: true,
+                    roleButtonEnabled: true,
+                    passwordButtonEnabled: true,
+                    imageButtonEnabled: true
                 });
                 setProcess({state: ProcessState.Success, message: ""});
             } else {
@@ -70,8 +78,10 @@ export default function Settings() {
     };
 
     const changeName = async () => {
+        setSettingsState(prev => ({...prev, nameButtonEnabled: false}));
+
         try {
-            const response = await fetch(BASE_URL + "/user-routes/change-name", {
+            const response = await fetch(`${BASE_URL}/user-routes/change-name`, {
                 method: "POST",
                 headers: getHeader(),
                 body: JSON.stringify({
@@ -80,7 +90,8 @@ export default function Settings() {
             });
             const data = await response.json();
             if (response.ok) {
-                localStorage.setItem('name', data.name);
+                const prevData = secureStorage.getItem('user');
+                secureStorage.setItem('user', {...prevData, name: data.name});
                 setToast(data.message);
             } else if (response.status >= 400 && response.status <= 499) {
                 setToast(data.message);
@@ -90,11 +101,15 @@ export default function Settings() {
         } catch (error) {
             setToast(error.toString());
         }
+
+        setSettingsState(prev => ({...prev, nameButtonEnabled: true}));
     };
 
     const changeRole = async () => {
+        setSettingsState(prev => ({...prev, roleButtonEnabled: false}));
+
         try {
-            const response = await fetch(BASE_URL + "/user-routes/change-role", {
+            const response = await fetch(`${BASE_URL}/user-routes/change-role`, {
                 method: "POST",
                 headers: getHeader(),
                 body: JSON.stringify({
@@ -112,11 +127,15 @@ export default function Settings() {
         } catch (error) {
             setToast(error.toString());
         }
+
+        setSettingsState(prev => ({...prev, roleButtonEnabled: true}));
     };
 
     const changePassword = async () => {
+        setSettingsState(prev => ({...prev, passwordButtonEnabled: false}));
+
         try {
-            const response = await fetch(BASE_URL + "/user-routes/change-password", {
+            const response = await fetch(`${BASE_URL}/user-routes/change-password`, {
                 method: "POST",
                 headers: getHeader(),
                 body: JSON.stringify({
@@ -144,22 +163,26 @@ export default function Settings() {
         } catch (error) {
             setToast(error.toString());
         }
+
+        setSettingsState(prev => ({...prev, passwordButtonEnabled: true}));
     };
 
     const changeImage = async () => {
+        setSettingsState(prev => ({...prev, imageButtonEnabled: false}));
+
         try {
             const formData = new FormData();
             formData.append('file', image.data);
 
-            const response = await fetch(BASE_URL + "/user-routes/change-image", {
+            const response = await fetch(`${BASE_URL}/user-routes/change-image`, {
                 method: "POST",
                 headers: getFormHeader(),
                 body: formData
             });
             const data = await response.json();
-            console.log(data);
             if (response.ok) {
-                localStorage.setItem('image_path', data.image_path);
+                const prevData = secureStorage.getItem('user');
+                secureStorage.setItem('user', {...prevData, image_path: data.image_path});
                 setSettingsState(prev => {
                     return {
                         ...prev,
@@ -175,6 +198,8 @@ export default function Settings() {
         } catch (error) {
             setToast(error.toString());
         }
+
+        setSettingsState(prev => ({...prev, imageButtonEnabled: true}));
     };
 
     const accordionData = [
@@ -203,8 +228,9 @@ export default function Settings() {
                         className="btn btn-primary my-2"
                         type="button"
                         role="button"
+                        disabled={!settingsState.imageButtonEnabled}
                         onClick={changeImage}
-                    >Upload Image</button>
+                    >{settingsState.imageButtonEnabled ? "Upload Image" : <Spinner />}</button>
                 </form>
             )
         },
@@ -225,8 +251,9 @@ export default function Settings() {
                         className="btn btn-primary my-2"
                         type="button"
                         role="button"
+                        disabled={!settingsState.nameButtonEnabled}
                         onClick={changeName}
-                    >Change Username</button>
+                    >{settingsState.nameButtonEnabled ? "Change Username" : <Spinner />}</button>
                 </form>
             )
         },
@@ -300,8 +327,9 @@ export default function Settings() {
                         className="btn btn-primary my-2"
                         type="button"
                         role="button"
+                        disabled={!settingsState.passwordButtonEnabled}
                         onClick={changePassword}
-                    >Change Password</button>
+                    >{settingsState.passwordButtonEnabled ? "Change Password" : <Spinner />}</button>
                 </form>
             )
         },
@@ -322,10 +350,19 @@ export default function Settings() {
                         className="btn btn-primary my-2"
                         type="button"
                         role="button"
+                        disabled={!settingsState.roleButtonEnabled}
                         onClick={changeRole}
-                    >Change Role</button>
+                    >{settingsState.roleButtonEnabled ? "Change Role" : <Spinner />}</button>
                 </form>
             )
+        },
+        {
+            itemText: <span><strong>Account Created: </strong>{settingsState.createdAt}</span>,
+            accordionBody: (<p className="my-2">You can not directly change account created date.</p>)
+        },
+        {
+            itemText: <span><strong>Account Updated: </strong>{settingsState.updatedAt}</span>,
+            accordionBody: (<p className="my-2">You can not directly change account updated date.</p>)
         }
     ];
 

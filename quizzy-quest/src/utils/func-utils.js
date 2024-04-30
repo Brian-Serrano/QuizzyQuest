@@ -1,34 +1,36 @@
+import { secureStorage } from "./secureStorage";
+
 export function saveCredentialsToBrowserStorage(data) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('id', data.id);
-    localStorage.setItem('name', data.name);
-    localStorage.setItem('image_path', data.image_path);
+    secureStorage.setItem('user', {
+        token: data.token,
+        id: data.id,
+        name: data.name,
+        image_path: data.image_path
+    });
 }
 
 export function getHeader() {
     return {
-        "Authorization": localStorage.getItem('token'),
+        "Authorization": secureStorage.getItem('user').token,
         "Content-Type": "application/json"
     };
 }
 
 export function getFormHeader() {
     return {
-        "Authorization": localStorage.getItem('token')
+        "Authorization": secureStorage.getItem('user').token
     };
 }
 
 export function logout() {
-    ['token', 'id', 'name', 'image_path'].forEach(key => {
-        localStorage.removeItem(key);
-    });
+    secureStorage.clear();
 }
 
 export function getImage(file, setImage, size) {
     if (file instanceof Blob) {
         const image = new Image(size.width, size.height);
         image.src = URL.createObjectURL(file);
-        image.onload = (event) => {
+        image.onload = (_) => {
             const canvas = document.createElement("canvas");
             canvas.width = size.width;
             canvas.height = size.height;

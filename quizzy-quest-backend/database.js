@@ -221,7 +221,7 @@ const QuizAnswer = sequelize.define(
             allowNull: false,
             defaultValue: ""
         },
-        questions_id: {
+        questions: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ""
@@ -261,6 +261,11 @@ const User = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: "user-images/"
+        },
+        forgot_password_code: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ""
         }
     }
 );

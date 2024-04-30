@@ -22,24 +22,32 @@ export default function QuizMenu(props) {
                 </div>
             </div>
             {props.children}
-            {props.question.is_answered ? (
-                <div>
-                    <div role="button">
-                        <p
-                            className={"fs-5 text-" + props.question.answer === props.question.user_answer ? "success" : "danger" + " text-center"}
-                            data-bs-toggle="collapse"
-                            data-bs-target="#collapseCol"
-                            aria-expanded="false"
-                            aria-controls="collapseCol"
-                        >{props.question.answer.toLowerCase() === props.question.user_answer.toLowerCase() ? "Correct" : "Wrong"} Answer Show Explanation <i className="bi bi-caret-down"></i></p>
-                    </div>
-                    <div className="collapse" id="collapseCol">
-                        <div className="card card-body m-2">
-                            {props.question.explanation}
+            {props.question.is_answered ? 
+                props.question.explanation.length > 0 ? (
+                    <div>
+                        <div role="button">
+                            <p
+                                className={"fs-5 text-" + props.question.answer === props.question.user_answer ? "success" : "danger" + " text-center"}
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseCol"
+                                aria-expanded="false"
+                                aria-controls="collapseCol"
+                            >{props.question.answer.toLowerCase() === props.question.user_answer.toLowerCase() ? "Correct" : "Wrong"} Answer Show Explanation <i className="bi bi-caret-down"></i></p>
+                        </div>
+                        <div className="collapse" id="collapseCol">
+                            <div className="card card-body m-2">
+                                {props.question.explanation}
+                            </div>
                         </div>
                     </div>
-                </div>
-            ) : <div></div>}
+                ) : (
+                    <div role="button">
+                        <p className={"fs-5 text-" + props.question.answer === props.question.user_answer ? "success" : "danger" + " text-center"}>
+                            {props.question.answer.toLowerCase() === props.question.user_answer.toLowerCase() ? "Correct" : "Wrong"} Answer
+                        </p>
+                    </div>
+                )
+             : <div></div>}
         </div>
     );
 }

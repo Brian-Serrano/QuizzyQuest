@@ -10,6 +10,7 @@ export default function QuizCreatorCard(props) {
                 <div className="card-body">
                     <h5 className="card-title">{props.quiz.name}</h5>
                     <h6 className="card-subtitle mb-2 text-muted">{props.quiz.topic}</h6>
+                    <p className="card-subtitle mb-2 text-muted">{props.quiz.updatedAt}</p>
                     <p className="card-text">{props.quiz.description}</p>
                     <div className="d-flex">
                         <div className="flex-grow-1">

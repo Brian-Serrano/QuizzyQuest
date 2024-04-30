@@ -16,12 +16,16 @@ export default function QuizIntro(props) {
                             <p className="fs-5">{props.quiz.name}</p>
                             <p className="fs-4 fw-bold">Description:</p>
                             <p className="fs-5">{props.quiz.description}</p>
+                            <p className="fs-4 fw-bold">Topic:</p>
+                            <p className="fs-5">{props.quiz.topic}</p>
+                            <p className="fs-4 fw-bold">Type:</p>
+                            <p className="fs-5">{props.quiz.type}</p>
                             <div className="row">
                                 <div className="col-8">
-                                    <p className="fs-4 fw-bold">Topic:</p>
-                                    <p className="fs-5">{props.quiz.topic}</p>
-                                    <p className="fs-4 fw-bold">Type:</p>
-                                    <p className="fs-5">{props.quiz.type}</p>
+                                    <p className="fs-4 fw-bold">Date Created:</p>
+                                    <p className="fs-5">{props.quiz.createdAt}</p>
+                                    <p className="fs-4 fw-bold">Date Updated:</p>
+                                    <p className="fs-5">{props.quiz.updatedAt}</p>
                                     <button role="button" type="button" className="btn btn-primary btn-lg" onClick={props.onStartClick}>START</button>
                                 </div>
                                 <div className="col-4 d-flex flex-column align-items-center justify-content-center" onClick={props.onProfile}>

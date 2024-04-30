@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const { User, MultipleChoice, Identification, TrueOrFalse } = require("./database");
 const fs = require("fs");
 const Canvas = require('canvas');
+const nodemailer = require('nodemailer');
+const { Op } = require('sequelize');
 
 const NAME_REGEX = new RegExp(process.env.NAME_REGEX);
 const EMAIL_REGEX = new RegExp(process.env.EMAIL_REGEX);
@@ -34,6 +36,53 @@ function createDateForFile() {
     }_${
         toTwoDigits(date.getSeconds())
     }`;
+}
+
+function formatDate(date) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const AmOrPm = date.getHours() >= 12 ? 'PM' : 'AM';
+    const currentDate = new Date();
+
+    if (
+        date.getFullYear() == currentDate.getFullYear() && 
+        date.getMonth() == currentDate.getMonth() && 
+        date.getDate() == currentDate.getDate() && 
+        date.getHours() == currentDate.getHours() && 
+        date.getMinutes() == currentDate.getMinutes()
+    ) {
+        return "now";
+    }
+
+    if (
+        date.getFullYear() == currentDate.getFullYear() && 
+        date.getMonth() == currentDate.getMonth() && 
+        date.getDate() == currentDate.getDate() && 
+        date.getHours() == currentDate.getHours()
+    ) {
+        const minutes = currentDate.getMinutes() - date.getMinutes();
+        return `${minutes} minute${minutes == 1 ? "" : "s"} ago`;
+    }
+
+    if (
+        date.getFullYear() == currentDate.getFullYear() && 
+        date.getMonth() == currentDate.getMonth() && 
+        date.getDate() == currentDate.getDate()
+    ) {
+        const hours = currentDate.getHours() - date.getHours();
+        return `${hours} hour${hours == 1 ? "" : "s"} ago`;
+    }
+
+    return `${
+        months[date.getMonth()]
+    } ${
+        date.getDate()
+    }, ${
+        date.getFullYear()
+    } ${
+        (date.getHours() % 12) || 12
+    }:${
+        ("0" + date.getMinutes()).slice(-2)
+    } ${AmOrPm}`;
 }
 
 function createImage(width, height, fileName, fontSize, text) {
@@ -69,7 +118,21 @@ async function validateLogin(user, email, password) {
     return { isValid: true, message: "User Logged In" };
 }
 
-async function validateSignup(name, email, password, confirmPassword) {
+function validateEmail(email) {
+    if (email.length < 15 || email.length > 40) {
+        return { isValid: false, message: "Email should be 15-40 characters" };
+    }
+    if (!matchExact(EMAIL_REGEX, email)) {
+        return { isValid: false, message: "Invalid Email" };
+    }
+
+    return { isValid: true, message: "Valid Email" };
+}
+
+async function validateSignup(name, email, password, confirmPassword, termsAccepted) {
+    if (!termsAccepted) {
+        return { isValid: false, message: "You did not accept terms and conditions" };
+    }
     if (!name || !email || !password || !confirmPassword) {
         return { isValid: false, message: "Fill up all empty fields" };
     }
@@ -99,25 +162,25 @@ async function validateSignup(name, email, password, confirmPassword) {
 }
 
 function validateQuiz(title, description, topic) {
-    if (title.length < 15 || title.length > 50) {
-        return { isValid: false, message: "Title should be 15-50 characters" };
+    if (title.length < 5 || title.length > 50) {
+        return { isValid: false, message: "Title should be 5-50 characters" };
     }
     if (description.length < 15 || description.length > 200) {
         return { isValid: false, message: "Description should be 15-200 characters" };
     }
-    if (topic.length < 15 || topic.length > 50) {
-        return { isValid: false, message: "Topic should be 15-50 characters" };
+    if (topic.length < 5 || topic.length > 50) {
+        return { isValid: false, message: "Topic should be 5-50 characters" };
     }
 
     return { isValid: true, message: "Quiz is valid" };
 }
 
 function questionValidationWrapper(question, item) {
-    if (question.question.length < 15 || question.question.length > 200) {
-        return { isValid: false, message: "Item " + item + ": Question should be 15-200 characters" };
+    if (question.question.length < 15 || question.question.length > 300) {
+        return { isValid: false, message: "Item " + item + ": Question should be 15-300 characters" };
     }
-    if (question.explanation.length < 15 || question.explanation.length > 200) {
-        return { isValid: false, message: "Item " + item + ": Explanation should be 15-200 characters" };
+    if (question.explanation.length > 300) {
+        return { isValid: false, message: "Item " + item + ": Explanation should be 0-300 characters" };
     }
     if (question.timer < 10 || question.timer > 120) {
         return { isValid: false, message: "Item " + item + ": Timer should range 10-120" };
@@ -201,6 +264,93 @@ function validateRole(role) {
     return { isValid: true, message: "Role changed" };
 }
 
+function validateForgotPassword(userCode, code, password, confirmPassword) {
+    if (code != userCode) {
+        return { isValid: false, message: "Invalid Code" };
+    }
+    if (!matchExact(PASSWORD_REGEX, password)) {
+        return { isValid: false, message: "Invalid Password" };
+    }
+    if (password != confirmPassword) {
+        return { isValid: false, message: "Passwords do not match" };
+    }
+
+    return { isValid: true, message: "Password changed successfully" };
+}
+
+function getValidations(questions, quiz, validator) {
+    const itemValidations = questions.map((question, idx) => validator(question, idx + 1));
+    const quizValidation = validateQuiz(quiz.name, quiz.description, quiz.topic);
+    return [quizValidation, ...itemValidations];
+}
+
+function getQuestions() {
+    return {
+        "Multiple Choice": async (questions_id) => {
+            return (await MultipleChoice.findAll({
+                where: {
+                    question_id: {
+                        [Op.or]: questions_id
+                    }
+                }
+            })).map(mapMultipleChoice);
+        },
+        "Identification": async (questions_id) => {
+            return (await Identification.findAll({
+                where: {
+                    question_id: {
+                        [Op.or]: questions_id
+                    }
+                }
+            })).map(mapIdentification);
+        },
+        "True or False": async (questions_id) => {
+            return (await TrueOrFalse.findAll({
+                where: {
+                    question_id: {
+                        [Op.or]: questions_id
+                    }
+                }
+            })).map(mapTrueOrFalse);
+        }
+    };
+}
+
+function removeQuestions() {
+    return {
+        "Multiple Choice": async (questions_id, transaction) => {
+            await MultipleChoice.destroy({
+                where: {
+                    question_id: {
+                        [Op.or]: questions_id
+                    }
+                },
+                transaction: transaction
+            });
+        },
+        "Identification": async (questions_id, transaction) => {
+            await Identification.destroy({
+                where: {
+                    question_id: {
+                        [Op.or]: questions_id
+                    }
+                },
+                transaction: transaction
+            });
+        },
+        "True or False": async (questions_id, transaction) => {
+            await TrueOrFalse.destroy({
+                where: {
+                    question_id: {
+                        [Op.or]: questions_id
+                    }
+                },
+                transaction: transaction
+            });
+        }
+    };
+}
+
 function mapMultipleChoice(question) {
     return {
         question_id: question.question_id,
@@ -242,56 +392,56 @@ async function mapAnswer(answer) {
     return {
         quiz_answer_id: answer.quiz_answer_id,
         user: await getUser(answer.user_id),
-        points: answer.points.split(",").map(p => Number(p)),
-        answers: answer.answers.split(","),
-        remaining_times: answer.remaining_times.split(",").map(p => Number(p)),
-        questions: await Promise.all(
-            answer.questions_id.split(",")
-                .map(async id => await getQuestion(Number(id), answer.type))
-        )
+        points: answer.points.split("|").map(p => Number(p)),
+        answers: answer.answers.split("|"),
+        remaining_times: answer.remaining_times.split("|").map(p => Number(p)),
+        questions: answer.questions.split("|"),
+        createdAt: formatDate(answer.createdAt)
     };
-}
-
-async function getQuestion(question_id, type) {
-    const question = (q) => {
-        return {question_id: q.question_id, question: q.question};
-    }
-
-    switch (type) {
-        case "Multiple Choice":
-            return question(await MultipleChoice.findOne({
-                where: {
-                    question_id: question_id
-                }
-            }));
-        case "Identification":
-            return question(await Identification.findOne({
-                where: {
-                    question_id: question_id
-                }
-            }));
-        case "True or False":
-            return question(await TrueOrFalse.findOne({
-                where: {
-                    question_id: question_id
-                }
-            }));
-        default:
-            throw new Error("Invalid quiz type");
-    }
 }
 
 async function getUser(userId) {
-    const user = await User.findOne({where: {id: userId}});
-    return {
-        id: user.id,
-        name: user.name,
-        image_path: user.image_path
-    };
+    if (userId === 0) {
+        return {
+            id: 0,
+            name: "Unknown User",
+            image_path: "user-images/anonymous.png"
+        }
+    } else {
+        const user = await User.findOne({where: {id: userId}});
+        return {
+            id: user.id,
+            name: user.name,
+            image_path: user.image_path
+        };
+    }
+}
+
+function deleteFile(file) {
+    if (file) {
+        fs.unlinkSync(`${relativePath}${quizImagePath}/${file.filename}`);
+    }
+}
+
+async function sendEmail(recipient, code) {
+    return await nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'Brianserrano503@gmail.com',
+            pass: process.env.PASSWORD
+        }
+    }).sendMail({
+        from: 'Brianserrano503@gmail.com',
+        to: recipient,
+        subject: 'QuizzyQuest Recover Password',
+        text: `<p>Use this code to change your password: </p><h3 style="color:blue;">${code}</h3>`
+    });
 }
 
 module.exports = {
+    formatDate,
     validateLogin,
+    validateEmail,
     validateSignup,
     validateMultipleChoice,
     validateIdentification,
@@ -300,6 +450,10 @@ module.exports = {
     validatePassword,
     validateUsername,
     validateRole,
+    validateForgotPassword,
+    getValidations,
+    getQuestions,
+    removeQuestions,
     mapMultipleChoice,
     mapIdentification,
     mapTrueOrFalse,
@@ -307,6 +461,8 @@ module.exports = {
     createDateForFile,
     createImage,
     getUser,
+    deleteFile,
+    sendEmail,
     userImagePath,
     quizImagePath,
     relativePath
