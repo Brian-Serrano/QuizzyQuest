@@ -22,13 +22,14 @@ export default function CarouselInsideModal(props) {
                                     aria-label={"Item " + (index + 1)}
                                     className={index === 0 ? "active" : ""}
                                     aria-current={index === 0}
+                                    key={question}
                                 ></button>;
                             })}
                         </div>
                         <div className="carousel-inner">
                             {props.answer.questions.map((question, index) => {
                                 return (
-                                    <div className={`carousel-item${index === 0 ? " active" : ""}`}>
+                                    <div className={`carousel-item${index === 0 ? " active" : ""}`} key={question}>
                                         <img src={`${IMAGE_BASE_URL}${props.quiz.image_path}`} className="d-block w-100" alt={props.quiz.name} />
                                         <div className="carousel-caption d-md-block">
                                             <h5>{props.answer.answers[index]}</h5>

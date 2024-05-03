@@ -24,7 +24,7 @@ export default function TrueOrFalseInput(props) {
                 />
                 <label className="form-label p-1 h5">Answer</label>
                 <select name="answer" className="form-select" onChange={props.onAnswerChange} value={props.question.tofAnswer}>{
-                    ["TRUE", "FALSE"].map(l => <option value={l}>{l}</option>)
+                    ["TRUE", "FALSE"].map(l => <option value={l} key={l}>{l}</option>)
                 }</select>
                 <InputField
                     name="explanation"

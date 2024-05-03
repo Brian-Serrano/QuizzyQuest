@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { User, MultipleChoice, Identification, TrueOrFalse } = require("./database");
+const { User, Quiz, MultipleChoice, Identification, TrueOrFalse } = require("./database");
 const fs = require("fs");
 const Canvas = require('canvas');
 const nodemailer = require('nodemailer');
@@ -165,11 +165,20 @@ function validateQuiz(title, description, topic) {
     if (title.length < 5 || title.length > 50) {
         return { isValid: false, message: "Title should be 5-50 characters" };
     }
+    if (/^\s+$/.test(title)) {
+        return { isValid: false, message: "Title should not only contain white spaces" };
+    }
     if (description.length < 15 || description.length > 200) {
         return { isValid: false, message: "Description should be 15-200 characters" };
     }
+    if (/^\s+$/.test(description)) {
+        return { isValid: false, message: "Description should not only contain white spaces" };
+    }
     if (topic.length < 5 || topic.length > 50) {
         return { isValid: false, message: "Topic should be 5-50 characters" };
+    }
+    if (/^\s+$/.test(topic)) {
+        return { isValid: false, message: "Topic should not only contain white spaces" };
     }
 
     return { isValid: true, message: "Quiz is valid" };
@@ -179,11 +188,23 @@ function questionValidationWrapper(question, item) {
     if (question.question.length < 15 || question.question.length > 300) {
         return { isValid: false, message: "Item " + item + ": Question should be 15-300 characters" };
     }
+    if (/^\s+$/.test(question.question)) {
+        return { isValid: false, message: "Item " + item + ": Question should not only contain white spaces" };
+    }
     if (question.explanation.length > 300) {
         return { isValid: false, message: "Item " + item + ": Explanation should be 0-300 characters" };
     }
+    if (/^\s+$/.test(question.explanation)) {
+        return { isValid: false, message: "Item " + item + ": Explanation should not only contain white spaces" };
+    }
+    if (!Number(question.timer)) {
+        return { isValid: false, message: "Item " + item + ": Timer should be a number" };
+    }
     if (question.timer < 10 || question.timer > 120) {
         return { isValid: false, message: "Item " + item + ": Timer should range 10-120" };
+    }
+    if (!Number(question.points)) {
+        return { isValid: false, message: "Item " + item + ": Points should be a number" };
     }
     if (question.points < 50 || question.points > 1000) {
         return { isValid: false, message: "Item " + item + ": Points should range 50-1000" };
@@ -197,8 +218,12 @@ function validateMultipleChoice(question, item) {
     if (!initialValidation.isValid) {
         return initialValidation;
     }
-    if ([question.letter_a, question.letter_b, question.letter_c, question.letter_d].some(l => l.length < 1 || l.length > 200)) {
+    const choices = [question.letter_a, question.letter_b, question.letter_c, question.letter_d];
+    if (choices.some(l => l.length < 1 || l.length > 200)) {
         return { isValid: false, message: "Item " + item + ": Choices should be 1-200 characters" };
+    }
+    if (choices.some(l => /^\s+$/.test(l))) {
+        return { isValid: false, message: "Item " + item + ": Choices should not only contain white spaces" };
     }
     if (!["a", "b", "c", "d"].includes(question.answer)) {
         return { isValid: false, message: "Item " + item + ": Invalid answer" };
@@ -214,6 +239,9 @@ function validateIdentification(question, item) {
     }
     if (question.answer.length < 1 || question.answer.length > 200) {
         return { isValid: false, message: "Item " + item + ": Answer should be 1-200 characters" };
+    }
+    if (/^\s+$/.test(question.answer)) {
+        return { isValid: false, message: "Item " + item + ": Answer should not only contain white spaces" };
     }
 
     return { isValid: true, message: "Item " + item + ": Item is valid" };
@@ -423,6 +451,24 @@ function deleteFile(file) {
     }
 }
 
+async function getQuiz(req) {
+    const actions = getQuestions();
+    const quiz = await Quiz.findOne({where: {quiz_id: req.query.quiz_id}});
+    const questions = await actions[quiz.type](quiz.questions_id.split("|").map(id => Number(id)));
+    return {
+        quiz_id: quiz.quiz_id,
+        user: await getUser(quiz.user_id),
+        name: quiz.name,
+        description: quiz.description,
+        topic: quiz.topic,
+        type: quiz.type,
+        questions: questions,
+        image_path: quiz.image_path,
+        createdAt: formatDate(quiz.createdAt),
+        updatedAt: formatDate(quiz.updatedAt)
+    };
+}
+
 async function sendEmail(recipient, code) {
     return await nodemailer.createTransport({
         service: 'Gmail',
@@ -462,6 +508,7 @@ module.exports = {
     createImage,
     getUser,
     deleteFile,
+    getQuiz,
     sendEmail,
     userImagePath,
     quizImagePath,

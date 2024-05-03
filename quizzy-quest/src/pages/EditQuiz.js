@@ -14,6 +14,8 @@ import LoadingState from "../components/LoadingState";
 import ErrorState from "../components/ErrorState";
 import Spinner from "../components/Spinner";
 import MyModal from "../components/MyModal";
+import ImportSpreadsheetMenu from "../components/ImportSpreadsheetMenu";
+import ExportQuizMenu from "../components/ExportQuizMenu";
 
 export default function EditQuiz() {
     const id = useLoaderData();
@@ -40,6 +42,39 @@ export default function EditQuiz() {
     const [image, setImage] = useState({data: null, src: ""});
     const [process, setProcess] = useState({state: ProcessState.Loading, message: ""});
     const [modalState, setModalState] = useState(false);
+
+    const mapQuestions = (question) => {
+        switch (quizState.type) {
+            case QuizType.MultipleChoice:
+                return {
+                    question: question.question,
+                    letter_a: question.letter_a,
+                    letter_b: question.letter_b,
+                    letter_c: question.letter_c,
+                    letter_d: question.letter_d,
+                    answer: question.mcAnswer,
+                    explanation: question.explanation,
+                    timer: question.timer,
+                    points: question.points
+                };
+            case QuizType.Identification:
+                return {
+                    question: question.question,
+                    answer: question.iAnswer,
+                    explanation: question.explanation,
+                    timer: question.timer,
+                    points: question.points
+                };
+            case QuizType.TrueOrFalse:
+                return {
+                    question: question.question,
+                    answer: question.tofAnswer === "TRUE",
+                    explanation: question.explanation,
+                    timer: question.timer,
+                    points: question.points
+                };
+        }
+    };
 
     const getQuizToEdit = async () => {
         try {
@@ -96,38 +131,7 @@ export default function EditQuiz() {
                 type: quizState.type,
                 visibility: quizState.visibility === "public"
             }));
-            formData.append('questions', JSON.stringify(questionsState.map(question => {
-                switch (quizState.type) {
-                    case QuizType.MultipleChoice:
-                        return {
-                            question: question.question,
-                            letter_a: question.letter_a,
-                            letter_b: question.letter_b,
-                            letter_c: question.letter_c,
-                            letter_d: question.letter_d,
-                            answer: question.mcAnswer,
-                            explanation: question.explanation,
-                            timer: question.timer,
-                            points: question.points
-                        };
-                    case QuizType.Identification:
-                        return {
-                            question: question.question,
-                            answer: question.iAnswer,
-                            explanation: question.explanation,
-                            timer: question.timer,
-                            points: question.points
-                        };
-                    case QuizType.TrueOrFalse:
-                        return {
-                            question: question.question,
-                            answer: question.tofAnswer === "TRUE",
-                            explanation: question.explanation,
-                            timer: question.timer,
-                            points: question.points
-                        };
-                }
-            })));
+            formData.append('questions', JSON.stringify(questionsState.map(mapQuestions)));
             formData.append('file', image.data);
 
             const response = await fetch(`${BASE_URL}/quiz-routes/update-quiz`, {
@@ -208,6 +212,21 @@ export default function EditQuiz() {
                         <div className="d-flex m-4">
                             <div className="flex-grow-1">
                                 <h2 className="m-0">Edit Quiz</h2>
+                            </div>
+                            <div>
+                                <ExportQuizMenu quizName={quizState.title} data={questionsState.map(mapQuestions)} />
+                            </div>
+                            <div>
+                                <ImportSpreadsheetMenu
+                                    replaceFields={(data, type) => {
+                                        setQuestionsState(data.map(v => ({...createItem(), ...v})).slice(0, MAX_ITEMS));
+                                        setQuizState(prev => ({...prev, type: type}));
+                                    }}
+                                    appendFields={(data, type) => {
+                                        setQuestionsState([...questionsState, ...data.map(v => ({...createItem(), ...v}))].slice(0, MAX_ITEMS));
+                                        setQuizState(prev => ({...prev, type: type}));
+                                    }}
+                                />
                             </div>
                             <div>
                                 <button

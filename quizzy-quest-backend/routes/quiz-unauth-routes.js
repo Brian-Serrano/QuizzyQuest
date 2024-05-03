@@ -1,26 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { Quiz, QuizAnswer } = require("../database");
-const { getQuestions, getUser, formatDate } = require("../utils");
+const { getQuiz } = require("../utils");
 
 router.get("/get-quiz", async (req, res) => {
     try {
-        const actions = getQuestions();
-        const quiz = await Quiz.findOne({where: {quiz_id: req.query.quiz_id}});
-        const questions = await actions[quiz.type](quiz.questions_id.split("|").map(id => Number(id)));
-        const response = {
-            quiz_id: quiz.quiz_id,
-            user: await getUser(quiz.user_id),
-            name: quiz.name,
-            description: quiz.description,
-            topic: quiz.topic,
-            type: quiz.type,
-            questions: questions,
-            image_path: quiz.image_path,
-            createdAt: formatDate(quiz.createdAt),
-            updatedAt: formatDate(quiz.updatedAt)
-        };
-        return res.status(200).json(response);
+        return res.status(200).json(await getQuiz(req));
     } catch (error) {
         return res.status(500).json({error: error.toString()});
     }
@@ -38,6 +23,28 @@ router.post("/answer-quiz", async (req, res) => {
             questions: req.body.questions.join("|")
         });
         return res.status(200).json({message: "Quiz successfully finished"});
+    } catch (error) {
+        return res.status(500).json({error: error.toString()});
+    }
+});
+
+router.get("/access-unauth-answer-quiz", async (req, res) => {
+    try {
+        const quiz = await Quiz.findOne({
+            where: {
+                quiz_id: req.query.quiz_id
+            },
+            attributes: ['visibility']
+        });
+
+        if (!quiz) {
+            return res.status(400).json({is_allowed: false, message: "Quiz not found."});
+        }
+        if (!quiz.visibility) {
+            return res.status(400).json({is_allowed: false, message: "Quiz is private."});
+        }
+
+        return res.status(200).json({is_allowed: true, message: "Route is allowed."});
     } catch (error) {
         return res.status(500).json({error: error.toString()});
     }

@@ -9,6 +9,11 @@ export function saveCredentialsToBrowserStorage(data) {
     });
 }
 
+export function appendAnswerQuizForUnauthUsers(id) {
+    const prevQuiz = secureStorage.getItem('quiz');
+    secureStorage.setItem('quiz', prevQuiz ? [...prevQuiz, id] : [id]);
+}
+
 export function getHeader() {
     return {
         "Authorization": secureStorage.getItem('user').token,
@@ -23,7 +28,7 @@ export function getFormHeader() {
 }
 
 export function logout() {
-    secureStorage.clear();
+    secureStorage.removeItem('user');
 }
 
 export function getImage(file, setImage, size) {

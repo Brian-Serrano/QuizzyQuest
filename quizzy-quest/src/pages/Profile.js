@@ -108,7 +108,7 @@ export default function Profile() {
                                         <tbody>
                                             {answers.map((answer, index) => {
                                                 return (
-                                                    <tr className="fw-normal">
+                                                    <tr className="fw-normal" key={answer}>
                                                         <th>
                                                             <span className="ms-2">{answer.type}</span>
                                                         </th>

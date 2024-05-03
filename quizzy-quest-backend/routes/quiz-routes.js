@@ -16,7 +16,8 @@ const {
     relativePath,
     formatDate,
     removeQuestions,
-    deleteFile
+    deleteFile,
+    getQuiz
 } = require("../utils");
 const multer = require("multer");
 const fs = require("fs");
@@ -39,22 +40,7 @@ const upload = multer({
 
 router.get("/get-quiz", async (req, res) => {
     try {
-        const actions = getQuestions();
-        const quiz = await Quiz.findOne({where: {quiz_id: req.query.quiz_id}});
-        const questions = await actions[quiz.type](quiz.questions_id.split("|").map(id => Number(id)));
-        const response = {
-            quiz_id: quiz.quiz_id,
-            user: await getUser(quiz.user_id),
-            name: quiz.name,
-            description: quiz.description,
-            topic: quiz.topic,
-            type: quiz.type,
-            questions: questions,
-            image_path: quiz.image_path,
-            createdAt: formatDate(quiz.createdAt),
-            updatedAt: formatDate(quiz.updatedAt)
-        };
-        return res.status(200).json(response);
+        return res.status(200).json(await getQuiz(req));
     } catch (error) {
         return res.status(500).json({error: error.toString()});
     }
@@ -374,13 +360,14 @@ router.post("/delete-quiz", async (req, res) => {
 
         const quiz = await Quiz.findOne({
             where: {quiz_id: req.body.quiz_id},
-            attributes: ['questions_id', 'type', 'user_id'],
+            attributes: ['questions_id', 'type', 'user_id', 'image_path'],
             transaction: transaction
         });
 
         if (quiz.user_id == res.locals.userId) {
             await deleteActions[quiz.type](quiz.questions_id.split("|"), transaction);
             await Quiz.destroy({where: {quiz_id: req.body.quiz_id}, transaction: transaction});
+            fs.unlinkSync(`${relativePath}${quiz.image_path}`);
     
             await transaction.commit();
             return res.status(201).json({message: "Quiz successfully deleted."});

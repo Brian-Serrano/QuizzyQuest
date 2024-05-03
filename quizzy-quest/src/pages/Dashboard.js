@@ -114,10 +114,12 @@ export default function Dashboard() {
 
     const mapToQuizCard = (quiz, creator) => {
         return creator === Creator.All ? <QuizCard
+            key={quiz}
             quiz={quiz}
             onProfileNavigate={() => onProfileNavigate(quiz.user.id)}
             navigate={() => onQuizNavigate(quiz.quiz_id)}
         /> : <QuizCreatorCard
+            key={quiz}
             quiz={quiz}
             navigate={() => onAboutQuizNavigate(quiz.quiz_id)}
         />;

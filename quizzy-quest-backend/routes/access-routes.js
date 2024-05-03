@@ -17,7 +17,10 @@ router.get("/access-answer-quiz", async (req, res) => {
             },
             attributes: ['visibility', 'user_id']
         });
-    
+
+        if (!quiz) {
+            return res.status(400).json({is_allowed: false, message: "Quiz not found."});
+        }
         if (answer) {
             return res.status(400).json({is_allowed: false, message: "Quiz is already answered."});
         }
@@ -42,7 +45,10 @@ router.get("/access-about-quiz", async (req, res) => {
             },
             attributes: ['user_id']
         });
-    
+
+        if (!quiz) {
+            return res.status(400).json({is_allowed: false, message: "Quiz not found."});
+        }
         if (Number(req.query.user_id) !== quiz.user_id) {
             return res.status(400).json({is_allowed: false, message: "You can not view the quiz you did not create."});
         }

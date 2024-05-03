@@ -9,7 +9,8 @@ export default function QuizMenu(props) {
                 <h2 className="text-center m-0 card-body">Item #{props.item + 1}</h2>
             </div>
             <div className="row">
-                <div className="col-3 d-flex align-items-center justify-content-center">
+                <div className="col-3 d-flex align-items-center justify-content-center flex-column">
+                    <p className="text-center m-0 fs-3 fw-bold">Time</p>
                     <p className="text-center m-0 fs-3">{props.question.timer - props.question.time_spent}</p>
                 </div>
                 <div className="col-6">
@@ -17,7 +18,8 @@ export default function QuizMenu(props) {
                         <h2 className="text-center m-0 card-body">{props.question.question}</h2>
                     </div>
                 </div>
-                <div className="col-3 d-flex align-items-center justify-content-center">
+                <div className="col-3 d-flex align-items-center justify-content-center flex-column">
+                    <p className="text-center m-0 fs-3 fw-bold">Points</p>
                     <p className="text-center m-0 fs-3">{props.question.points}</p>
                 </div>
             </div>

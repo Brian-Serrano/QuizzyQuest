@@ -12,6 +12,7 @@ import EditQuizMenu from "../components/EditQuizMenu";
 import GetQuizInput from "../components/GetQuizInput";
 import AddItemButton from "../components/AddItemButton";
 import Spinner from "../components/Spinner";
+import ImportSpreadsheetMenu from "../components/ImportSpreadsheetMenu";
 
 export default function AddQuiz() {
     const onNavigate = useNavigate();
@@ -140,10 +141,22 @@ export default function AddQuiz() {
                         <h2 className="m-0">Create New Quiz</h2>
                     </div>
                     <div>
+                        <ImportSpreadsheetMenu
+                            replaceFields={(data, type) => {
+                                setQuestionsState(data.map(v => ({...createItem(), ...v})).slice(0, MAX_ITEMS));
+                                setAddQuizState(prev => ({...prev, type: type}));
+                            }}
+                            appendFields={(data, type) => {
+                                setQuestionsState([...questionsState, ...data.map(v => ({...createItem(), ...v}))].slice(0, MAX_ITEMS));
+                                setAddQuizState(prev => ({...prev, type: type}));
+                            }}
+                        />
+                    </div>
+                    <div>
                         <button
                             type="button"
                             disabled={!addQuizState.buttonEnabled}
-                            className="btn btn-primary"
+                            className="btn btn-primary mx-2"
                             onClick={addQuiz}
                         >{addQuizState.buttonEnabled ? "Create" : <Spinner />}</button>
                     </div>

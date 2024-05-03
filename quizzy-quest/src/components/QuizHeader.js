@@ -3,7 +3,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 
 export default function QuizHeader(props) {
     return (
-        <div>
+        <div className="m-3">
             <div className="row">
                 <div className="col card shadow-sm m-1">
                     <div className="card-body">
@@ -26,7 +26,7 @@ export default function QuizHeader(props) {
             </div>
             <p className="fs-5 m-2 text-center">PROGRESS</p>
             <div className="progress m-2" aria-valuenow={props.percent} aria-valuemin={0} aria-valuemax={100} role="progressbar">
-                <div className="progress-bar" style={{width: props.percent + "%"}}></div>
+                <div className="progress-bar" style={{width: props.percent + "%"}}>{Math.round(props.percent)}%</div>
             </div>
         </div>
     );

@@ -8,7 +8,7 @@ import { secureStorage } from "../utils/secureStorage";
 
 export default function NavigationBar() {
     const [dropdown, setDropdown] = useState("hide");
-    const user = secureStorage.getItem('user');
+    const user = secureStorage.getItem('user') || {token: "", id: "", name: "", image_path: ""};
 
     return (
         <div>

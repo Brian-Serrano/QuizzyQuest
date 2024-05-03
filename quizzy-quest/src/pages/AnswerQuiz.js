@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ProcessState, QuizType } from "../utils/enums";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
-import { getHeader } from "../utils/func-utils";
+import { appendAnswerQuizForUnauthUsers, getHeader } from "../utils/func-utils";
 import NavigationBar from "../components/NavigationBar";
 import QuizIntro from "../components/QuizIntro";
 import QuizHeader from "../components/QuizHeader";
@@ -18,6 +18,7 @@ import MyModal from "../components/MyModal";
 import MyToast from "../components/MyToast";
 import { useLoaderData } from "react-router-dom";
 import Spinner from "../components/Spinner";
+import { secureStorage } from "../utils/secureStorage";
 
 export default function AnswerQuiz() {
     const [id, unauth] = useLoaderData();
@@ -85,6 +86,13 @@ export default function AnswerQuiz() {
     const finishQuiz = async (questions) => {
         setQuiz(prev => ({...prev, buttonEnabled: false}));
 
+        if (unauth === "unauthorized") {
+            const prevQuiz = secureStorage.getItem('quiz');
+            if (prevQuiz && prevQuiz.includes(quiz.quiz_id)) {
+                return setToast("Quiz is already answered");
+            }
+        }
+
         try {
             const response = await fetch(`${BASE_URL}/quiz${unauth === "unauthorized" ? "-unauth-" : "-"}routes/answer-quiz`, {
                 method: "POST",
@@ -113,6 +121,11 @@ export default function AnswerQuiz() {
                     buttonText: "Dashboard",
                     visibility: true
                 });
+
+                if (unauth === "unauthorized") {
+                    appendAnswerQuizForUnauthUsers(quiz.quiz_id);
+                }
+
                 setQuiz(prev => ({...prev, buttonEnabled: true}));
             } else if (response.status >= 400 && response.status <= 499) {
                 setToast(data.message);
@@ -322,9 +335,9 @@ export default function AnswerQuiz() {
         <div>
             {unauth === "unauthorized" ? (
                 <div>
-                    <nav class="navbar navbar-expand-lg navbar-warning bg-warning fixed-top">
-                        <div class="container-fluid">
-                            <span class="navbar-brand">QuizzyQuest</span>
+                    <nav className="navbar navbar-expand-lg navbar-warning bg-warning fixed-top">
+                        <div className="container-fluid">
+                            <span className="navbar-brand">QuizzyQuest</span>
                         </div>
                     </nav>
                     <div style={{marginTop: "56px"}}></div>
