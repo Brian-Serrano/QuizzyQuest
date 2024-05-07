@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { User, Quiz, MultipleChoice, Identification, TrueOrFalse } = require("./database");
+const { User, Quiz, MultipleChoice, Identification, TrueOrFalse, QuizAnswer } = require("./database");
 const fs = require("fs");
 const Canvas = require('canvas');
 const nodemailer = require('nodemailer');
@@ -484,6 +484,10 @@ async function sendEmail(recipient, code) {
     });
 }
 
+async function isQuizAnswered(quiz_id, user_id) {
+    return (await QuizAnswer.findOne({where: {quiz_id: quiz_id, user_id: user_id}})) ? true : false;
+}
+
 module.exports = {
     formatDate,
     validateLogin,
@@ -510,6 +514,7 @@ module.exports = {
     deleteFile,
     getQuiz,
     sendEmail,
+    isQuizAnswered,
     userImagePath,
     quizImagePath,
     relativePath

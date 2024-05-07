@@ -17,7 +17,8 @@ const {
     formatDate,
     removeQuestions,
     deleteFile,
-    getQuiz
+    getQuiz,
+    isQuizAnswered
 } = require("../utils");
 const multer = require("multer");
 const fs = require("fs");
@@ -171,7 +172,8 @@ router.get("/get-all-quiz", async (req, res) => {
                 type: quiz.type,
                 items: quiz.questions_id.split("|").length,
                 image_path: quiz.image_path,
-                updatedAt: formatDate(quiz.updatedAt)
+                updatedAt: formatDate(quiz.updatedAt),
+                is_answered: await isQuizAnswered(quiz.quiz_id, res.locals.userId)
             }))
         );
         return res.status(200).json(response);

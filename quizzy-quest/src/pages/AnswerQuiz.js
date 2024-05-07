@@ -168,7 +168,8 @@ export default function AnswerQuiz() {
                 return (
                     <QuizMenu
                         item={item}
-                        question={questions[item]}>
+                        question={questions[item]}
+                        onError={setToast}>
                         <MultipleChoiceMenu
                             question={questions[item]}
                             selectAnswer={(letter) => {
@@ -192,7 +193,8 @@ export default function AnswerQuiz() {
                 return (
                     <QuizMenu
                         item={item}
-                        question={questions[item]}>
+                        question={questions[item]}
+                        onError={setToast}>
                         <IdentificationMenu
                             question={questions[item]}
                             onAnswerChange={(event) => {
@@ -227,7 +229,8 @@ export default function AnswerQuiz() {
                 return (
                     <QuizMenu
                         item={item}
-                        question={questions[item]}>
+                        question={questions[item]}
+                        onError={setToast}>
                         <TrueOrFalseMenu
                             question={questions[item]}
                             selectAnswer={(choice) => {

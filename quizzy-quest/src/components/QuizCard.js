@@ -21,8 +21,9 @@ export default function QuizCard(props) {
                     </div>
                     <p className="card-text">{props.quiz.description}</p>
                     <div className="d-flex">
-                        <div className="flex-grow-1">
+                        <div className="flex-grow-1 d-flex flex-row align-items-center">
                             <button type="button" onClick={props.navigate} className="btn btn-primary">View</button>
+                            <p className="text-success my-0 mx-2">{props.quiz.is_answered ? "Answered" : ""}</p>
                         </div>
                         <div>
                             <span className="fs-6 text-warning">Items: {props.quiz.items}</span>

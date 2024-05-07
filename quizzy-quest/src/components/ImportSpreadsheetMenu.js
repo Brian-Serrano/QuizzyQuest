@@ -172,7 +172,7 @@ export default function ImportSpreadsheetMenu(props) {
                                     value={workSheet.selected}
                                     onChange={(event) => { setWorksheet(prev => ({...prev, selected: Number(event.target.value)})); }}
                                 >
-                                    {workSheet.names.map((name, idx) => <option value={idx} key={name}>{name}</option>)}
+                                    {workSheet.names.map((name, idx) => <option value={idx} key={idx}>{name}</option>)}
                                 </select>
                                 <div className="m-2">
                                     <div><svg width={20} height={20} className="m-2"><rect style={{fill: "rgba(0,255,0,0.2)"}} width={20} height={20}></rect></svg>Valid and will be placed in fields.</div>
@@ -245,31 +245,33 @@ export default function ImportSpreadsheetMenu(props) {
                 type="file"
                 name="file"
                 onChange={(event) => {
-                    const fileName = event.target.files[0].name;
-                    const splittedFileName = fileName.split(".");
-                    if (allowedFormats.includes(splittedFileName[splittedFileName.length - 1])) {
-                        const fileReader = new FileReader();
-                        fileReader.readAsArrayBuffer(event.target.files[0]);
-                        fileReader.onload = (event) => {
-                            let workbook = XLSX.read(
-                                event.target.result,
-                                { type: "binary" },
-                                { dateNF: "mm/dd/yyyy" }
-                            );
-                            const res = workbook.SheetNames.map((sheet) => {
-                                return {
-                                    name: sheet,
-                                    data: XLSX.utils.sheet_to_json(workbook.Sheets[sheet], {raw: false, header: 1, defval: ""})
-                                };
-                            }).filter(data => data.data.length > 0);
-                            setFileName(fileName);
-                            setResult(res.map(r => r.data));
-                            setHeaders(res.map(r => new Array(r.data[0].length).fill("none")));
-                            setWorksheet({names: res.map(r => r.name), selected: 0});
-                            setModalState(true);
-                        };
-                    } else {
-                        showError("Unallowed file format");
+                    if (event.target.files[0]) {
+                        const fileName = event.target.files[0].name;
+                        const splittedFileName = fileName.split(".");
+                        if (allowedFormats.includes(splittedFileName[splittedFileName.length - 1])) {
+                            const fileReader = new FileReader();
+                            fileReader.readAsArrayBuffer(event.target.files[0]);
+                            fileReader.onload = (event) => {
+                                let workbook = XLSX.read(
+                                    event.target.result,
+                                    { type: "binary" },
+                                    { dateNF: "mm/dd/yyyy" }
+                                );
+                                const res = workbook.SheetNames.map((sheet) => {
+                                    return {
+                                        name: sheet,
+                                        data: XLSX.utils.sheet_to_json(workbook.Sheets[sheet], {raw: false, header: 1, defval: ""})
+                                    };
+                                }).filter(data => data.data.length > 0);
+                                setFileName(fileName);
+                                setResult(res.map(r => r.data));
+                                setHeaders(res.map(r => new Array(r.data[0].length).fill("none")));
+                                setWorksheet({names: res.map(r => r.name), selected: 0});
+                                setModalState(true);
+                            };
+                        } else {
+                            showError("Unallowed file format");
+                        }
                     }
                 }}
                 accept={allowedFormats.join(",")}

@@ -1,12 +1,16 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import SpeechSynthesis from "./SpeechSynthesis";
 
 export default function QuizMenu(props) {
     return (
         <div>
             <div className="card shadow-sm m-2">
-                <h2 className="text-center m-0 card-body">Item #{props.item + 1}</h2>
+                <h2 className="text-center m-0 card-body">
+                    <span className="align-middle">Item #{props.item + 1}</span>
+                    <SpeechSynthesis question={props.question.question} onError={props.onError} />
+                </h2>
             </div>
             <div className="row">
                 <div className="col-3 d-flex align-items-center justify-content-center flex-column">

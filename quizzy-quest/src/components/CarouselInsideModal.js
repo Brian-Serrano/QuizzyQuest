@@ -1,6 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { IMAGE_BASE_URL } from "../utils/constants";
+import SpeechSynthesis from "./SpeechSynthesis";
 
 export default function CarouselInsideModal(props) {
     return (
@@ -22,18 +23,18 @@ export default function CarouselInsideModal(props) {
                                     aria-label={"Item " + (index + 1)}
                                     className={index === 0 ? "active" : ""}
                                     aria-current={index === 0}
-                                    key={question}
+                                    key={index}
                                 ></button>;
                             })}
                         </div>
                         <div className="carousel-inner">
                             {props.answer.questions.map((question, index) => {
                                 return (
-                                    <div className={`carousel-item${index === 0 ? " active" : ""}`} key={question}>
+                                    <div className={`carousel-item${index === 0 ? " active" : ""}`} key={index}>
                                         <img src={`${IMAGE_BASE_URL}${props.quiz.image_path}`} className="d-block w-100" alt={props.quiz.name} />
                                         <div className="carousel-caption d-md-block">
                                             <h5>{props.answer.answers[index]}</h5>
-                                            <p>{question}</p>
+                                            <p><span className="align-middle">{question}</span><SpeechSynthesis question={question} onError={(_) => {}} /></p>
                                             <p>Points: {props.answer.points[index]}, Remaining Time: {props.answer.remaining_times[index]}</p>
                                         </div>
                                     </div>

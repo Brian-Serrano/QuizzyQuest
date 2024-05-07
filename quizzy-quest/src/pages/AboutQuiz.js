@@ -103,7 +103,7 @@ export default function AboutQuiz() {
                                         <tbody>
                                             {answers.map((answer, index) => {
                                                 return (
-                                                    <tr className="fw-normal" key={answer}>
+                                                    <tr className="fw-normal" key={index}>
                                                         <th>
                                                             <img src={`${IMAGE_BASE_URL}${answer.user.image_path}`} alt={answer.user.name} width={50} className="rounded-circle" />
                                                             <span className="ms-2">{answer.user.name}</span>
