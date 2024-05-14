@@ -1,6 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
+/**
+ * An input field used for data that require long/many text (e.g. description of quiz)
+ * @param {object} props An object that contains placeholder, name, value, onChange (responsible for changes in input field value) for the input field
+ * @returns JSX Element
+ */
 export default function QuizTextArea(props) {
     return (
         <div className="col py-2">

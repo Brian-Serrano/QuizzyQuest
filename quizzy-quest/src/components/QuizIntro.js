@@ -2,6 +2,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { IMAGE_BASE_URL } from "../utils/constants";
 
+/**
+ * A menu shown before starting to answer quiz
+ * @param {object} props An object containing quiz (an object containing all information), onProfile (navigate to creator of quiz profile when image is clicked), onStartClick (start the quiz when the start button clicked)
+ * @returns JSX Element
+ */
 export default function QuizIntro(props) {
     return (
         <div className="p-4 container">

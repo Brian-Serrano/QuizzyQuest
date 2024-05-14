@@ -5,6 +5,11 @@ import InputField from "./InputField";
 import QuizTextArea from "./QuizTextArea";
 import RadioInput from "./RadioInput";
 
+/**
+ * A container used in editing the quiz information (visibility, title, image etc.) in add quiz and edit quiz page.
+ * @param {object} props an object with the following properties: image, quizState, pickImage, changeQuizInfo and changeVisibility. image contains the blob/file and src of a quiz image. quizState is an object containing the values for the container input fields (title, description, etc.). pickImage is callback function that will invoked when user pick image in file explorer, the callback will received an event that contains information about the file that should be added to state. changeQuizInfo is a callback function that will invoked when the user change text in field (title, description, topic, type), and it receives event containing the information about field and key what input field value should be changed. changeVisibility is a callback function invoked when user select visibility.
+ * @returns JSX Element
+ */
 export default function EditQuizMenu(props) {
     return (
         <div className="card m-4 shadow-sm">

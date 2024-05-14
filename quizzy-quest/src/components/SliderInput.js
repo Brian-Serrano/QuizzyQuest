@@ -1,6 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
+/**
+ * An input used for number ranges e.g. timer, points
+ * @param {object} props An object that contains text, value, min, max, step, name, onChange (responsible for changes in slider) for the input field
+ * @returns JSX Element
+ */
 export default function SliderInput(props) {
     return (
         <div>

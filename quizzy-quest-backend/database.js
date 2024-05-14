@@ -37,6 +37,7 @@ const Quiz = sequelize.define(
             allowNull: false,
             defaultValue: "Multiple Choice"
         },
+        // a list of ids that joined as string with pipe as delimiter
         questions_id: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -206,21 +207,25 @@ const QuizAnswer = sequelize.define(
             allowNull: false,
             defaultValue: "Multiple Choice"
         },
+        // a list of points that joined as string with pipe as delimiter
         points: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ""
         },
+        // a list of answers (string) that joined as string with pipe as delimiter
         answers: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ""
         },
+        // a list of times that joined as string with pipe as delimiter
         remaining_times: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: ""
         },
+        // a list of questions (string) that joined as string with pipe as delimiter
         questions: {
             type: DataTypes.STRING,
             allowNull: false,

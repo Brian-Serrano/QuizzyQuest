@@ -6,6 +6,10 @@ import { IMAGE_BASE_URL } from "../utils/constants";
 import { useState } from "react";
 import { secureStorage } from "../utils/secureStorage";
 
+/**
+ * Navigation bar used by the entire application except signup
+ * @returns JSX Element
+ */
 export default function NavigationBar() {
     const [dropdown, setDropdown] = useState("hide");
     const user = secureStorage.getItem('user') || {token: "", id: "", name: "", image_path: ""};

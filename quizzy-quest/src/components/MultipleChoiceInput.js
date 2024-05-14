@@ -4,6 +4,11 @@ import InputField from "./InputField";
 import InputGroups from "./InputGroups";
 import SliderInput from "./SliderInput";
 
+/**
+ * Component used for questions/items that have a quiz type of multiple choice when adding/editing quiz.
+ * @param {object} props An object that contains the following properties: item, question, onQuestionChange, onChoiceChange, onAnswerChange, onExplanationChange, onTimerChange, onPointsChange and removeItem. item is the item number starting from 0. question is an object, which the properties used as text on input fields. onQuestionChange, onChoiceChange, onAnswerChange, onExplanationChange, onTimerChange, onPointsChange base on their name changes the value from the input field. removeItem removes this component/item when the user click the remove button.
+ * @returns JSX Element
+ */
 export default function MultipleChoiceInput(props) {
     return (
         <div className="card m-4 shadow-sm" key={props.item}>

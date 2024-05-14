@@ -38,6 +38,7 @@ export default function AnswerQuiz() {
         visibility: false
     });
 
+    // function that will get the quiz to answer
     const getQuiz = async () => {
         try {
             const response = await fetch(`${BASE_URL}/quiz${unauth === "unauthorized" ? "-unauth-" : "-"}routes/get-quiz?quiz_id=${id}`, {
@@ -72,10 +73,12 @@ export default function AnswerQuiz() {
         }
     }
 
+    // get the quiz to answer in mount of page
     useEffect(() => {
         getQuiz();
     }, []);
 
+    // show toast on 10 seconds with message
     const setToast = (error) => {
         setQuiz({...quiz, error: error, visibility: true, buttonEnabled: true});
         setTimeout(() => {
@@ -83,6 +86,7 @@ export default function AnswerQuiz() {
         }, 10000);
     };
 
+    // function that should be invoked when the user finish the quiz or all items are answered
     const finishQuiz = async (questions) => {
         setQuiz(prev => ({...prev, buttonEnabled: false}));
 
@@ -136,12 +140,15 @@ export default function AnswerQuiz() {
             setToast(error.toString());
         }
     };
+
+    // check if all the items are answered then finish the quiz, everytime the user answered an item/question
     useEffect(() => {
         if (questions.length > 0 && questions.every(question => question.is_answered)) {
             finishQuiz(questions);
         }
     }, [questions.filter(q => q.is_answered).length]);
 
+    // run timer when the item/question is unanswered or not out of time
     useEffect(() => {
         const interval = setInterval(() => {
             if (!inIntro) {
@@ -162,6 +169,7 @@ export default function AnswerQuiz() {
         return () => clearInterval(interval);
     }, [item, inIntro]);
 
+    // check the type of quiz and determine what component (MultipleChoiceMenu, IdentificationMenu or TrueOrFalseMenu) should be used/shown
     const getMenu = (type) => {
         switch (type) {
             case QuizType.MultipleChoice:
@@ -253,6 +261,7 @@ export default function AnswerQuiz() {
         }
     }
 
+    // show a component base on the current process state
     const getProcess = (process) => {
         switch (process.state) {
             case ProcessState.Loading:

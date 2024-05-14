@@ -17,6 +17,7 @@ import ImportSpreadsheetMenu from "../components/ImportSpreadsheetMenu";
 export default function AddQuiz() {
     const onNavigate = useNavigate();
 
+    // add a new item with empty/default values
     const createItem = () => {
         return {
             question: "",
@@ -49,6 +50,7 @@ export default function AddQuiz() {
 
     const [image, setImage] = useState({data: null, src: ""});
 
+    // function that should be invoked when the user want to create the quiz
     const addQuiz = async () => {
         setAddQuizState(prev => ({...prev, buttonEnabled: false}));
 
@@ -113,10 +115,12 @@ export default function AddQuiz() {
         }
     };
 
+    // change the quiz visibility
     const changeVisibility = (event) => {
         changeQuizInfo(event, "visibility");
     };
 
+    // change quiz information
     const changeQuizInfo = (event, key) => {
         setAddQuizState(prev => {
             return {
@@ -126,6 +130,7 @@ export default function AddQuiz() {
         });
     };
 
+    // change item/question value
     const changeQuestions = (event, key, index) => {
         setQuestionsState(prev => {
             return prev.map((q, idx) => index === idx ? {...q, [key]: event.target.value} : q);

@@ -17,6 +17,7 @@ export default function Profile() {
     const [answers, setAnswers] = useState([]);
     const [modalState, setModalState] = useState(0);
 
+    // function that will get the user and their quiz answers
     const getUser = async () => {
         try {
             const response = await fetch(`${BASE_URL}/quiz-routes/get-user-answered-quiz?user_id=${id}`, {
@@ -44,6 +45,7 @@ export default function Profile() {
         }
     }
 
+    // get the user and their quiz answers on the mount of page
     useEffect(() => {
         getUser();
     }, []);

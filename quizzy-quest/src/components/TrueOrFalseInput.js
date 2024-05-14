@@ -3,6 +3,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import InputField from "./InputField";
 import SliderInput from "./SliderInput";
 
+/**
+ * Component used for questions/items that have a quiz type of true or false when adding/editing quiz.
+ * @param {object} props An object that contains the following properties: item, question, onQuestionChange, onAnswerChange, onExplanationChange, onTimerChange, onPointsChange and removeItem. item is the item number starting from 0. question is an object, which the properties used as text on input fields. onQuestionChange, onAnswerChange, onExplanationChange, onTimerChange, onPointsChange base on their name changes the value from the input field. removeItem removes this component/item when the user click the remove button.
+ * @returns JSX Element
+ */
 export default function TrueOrFalseInput(props) {
     return (
         <div className="card m-4 shadow-sm">

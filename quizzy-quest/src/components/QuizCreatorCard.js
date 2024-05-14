@@ -2,6 +2,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import { IMAGE_BASE_URL } from "../utils/constants";
 
+/**
+ * Card on dashboard page for the created quizzes of user.
+ * @param {object} props An object that contains quiz (object that contain information about the quiz), navigate (callback function that navigates creator of quiz to about quiz page when view button is clicked)
+ * @returns JSX Element
+ */
 export default function QuizCreatorCard(props) {
     return (
         <div>

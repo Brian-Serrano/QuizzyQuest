@@ -6,6 +6,11 @@ import MultipleChoiceInput from "./MultipleChoiceInput";
 import IdentificationInput from "./IdentificationInput";
 import TrueOrFalseInput from "./TrueOrFalseInput";
 
+/**
+ * A function that checks what JSX Element (component) to use base on the quiz type and return it.
+ * @param {object} props An object that contains the following properties: questionsState, quizState, setQuestionsState, changeQuestions. They are passed to the returned component. questionsState is an array of objects that are the text for the item input fields. The type of quizState is used what component to use for the page. setQuestionsState and changeQuestions are responsible for changing values (updating the state) in the input fields.
+ * @returns MultipleChoiceInput, IdentificationInput or TrueOrFalseInput JSX Element
+ */
 export default function GetQuizInput(props) {
     const menu = props.questionsState.map((question, index) => {
         const removeItem = () => {

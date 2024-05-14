@@ -18,6 +18,7 @@ export default function Settings() {
     const [message, setMessage] = useState({text: "", visibility: false});
     const [image, setImage] = useState({data: null, src: ""});
 
+    // function that will get the user information that can be edited
     const getUser = async () => {
         try {
             const response = await fetch(`${BASE_URL}/user-routes/get-user`, {
@@ -54,16 +55,19 @@ export default function Settings() {
         }
     };
 
+    // get the user information on the mount of page
     useEffect(() => {
         getUser();
     }, []);
 
+    // function that should be invoked when the user select image in the file explorer
     const getFileInfo = (event) => {
         getImage(event.target.files[0], (blob, src) => {
             setImage({data: blob, src: src});
         }, {width: 200, height: 200});
     };
 
+    // show toast on 10 seconds with the message
     const setToast = (text) => {
         setMessage({text: text, visibility: true});
         setTimeout(() => {
@@ -71,12 +75,14 @@ export default function Settings() {
         }, 10000);
     };
 
+    // function that is responsible to the changes of value on input fields (change password, role or user name fields)
     const setSettings = (event, key) => {
         setSettingsState(prev => {
             return {...prev, [key]: event.target.value};
         });
     };
 
+    // function that request server to change the user name
     const changeName = async () => {
         setSettingsState(prev => ({...prev, nameButtonEnabled: false}));
 
@@ -105,6 +111,7 @@ export default function Settings() {
         setSettingsState(prev => ({...prev, nameButtonEnabled: true}));
     };
 
+    // function that request server to change the user role
     const changeRole = async () => {
         setSettingsState(prev => ({...prev, roleButtonEnabled: false}));
 
@@ -131,6 +138,7 @@ export default function Settings() {
         setSettingsState(prev => ({...prev, roleButtonEnabled: true}));
     };
 
+    // function that request server to change the user password
     const changePassword = async () => {
         setSettingsState(prev => ({...prev, passwordButtonEnabled: false}));
 
@@ -167,6 +175,7 @@ export default function Settings() {
         setSettingsState(prev => ({...prev, passwordButtonEnabled: true}));
     };
 
+    // function that request server to change the user image
     const changeImage = async () => {
         setSettingsState(prev => ({...prev, imageButtonEnabled: false}));
 
@@ -202,6 +211,7 @@ export default function Settings() {
         setSettingsState(prev => ({...prev, imageButtonEnabled: true}));
     };
 
+    // an array of object that are shown on accordion components. itemText is the component (JSX Element) that are shown and if clicked will show/hide the accordionBody component (JSX Element)
     const accordionData = [
         {
             itemText: <p>

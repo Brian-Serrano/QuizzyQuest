@@ -3,6 +3,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useState } from "react";
 
+/**
+ * This component contains only play/pause button and responsible for providing speech for the questions.
+ * @param {object} props An object that contains the question to be used
+ * @returns JSX Element
+ */
 export default function SpeechSynthesis(props) {
     const [speaking, setSpeaking] = useState(false);
     const utterThis = new SpeechSynthesisUtterance(props.question);

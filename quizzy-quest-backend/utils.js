@@ -12,15 +12,30 @@ const userImagePath = "user-images";
 const quizImagePath = "quiz-images";
 const relativePath = "../quizzy-quest-backend/images/";
 
+/**
+ * Match the entire string with the pattern
+ * @param {RegExp} regex The pattern to use
+ * @param {string} string The string to check for matches
+ * @returns Whether pattern matches string
+ */
 function matchExact(regex, string) {
     const match = string.match(regex);
     return match && string === match[0];
 }
 
+/**
+ * Add the zero to the beginning of digits and get the last two numbers
+ * @param {number} number The number to transform
+ * @returns Two digit number
+ */
 function toTwoDigits(number) {
     return ("0" + number).slice(-2);
 }
 
+/**
+ * Create file name as date for images
+ * @returns String date when the file was created
+ */
 function createDateForFile() {
     const date = new Date();
     return `${
@@ -38,6 +53,11 @@ function createDateForFile() {
     }`;
 }
 
+/**
+ * Format date as string, commonly used for quiz, answer, account created/updated date
+ * @param {Date} date The date to format
+ * @returns Formatted/transformed date as string
+ */
 function formatDate(date) {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const AmOrPm = date.getHours() >= 12 ? 'PM' : 'AM';
@@ -85,6 +105,14 @@ function formatDate(date) {
     } ${AmOrPm}`;
 }
 
+/**
+ * Create an image (store in images directory) with width x height size, random background color and a text.
+ * @param {number} width Width of image
+ * @param {number} height Height of image
+ * @param {string} fileName The name of image when stored in images directory
+ * @param {number} fontSize The size of text
+ * @param {string} text Text for image
+ */
 function createImage(width, height, fileName, fontSize, text) {
     const randomColor = () => (Math.floor(Math.random() * 100) + 100).toString(16);
     const image = Canvas.createCanvas(width, height);
@@ -101,6 +129,13 @@ function createImage(width, height, fileName, fontSize, text) {
     fs.writeFileSync(relativePath + fileName, image.toBuffer());
 }
 
+/**
+ * Validate login of user
+ * @param {User?} user The user or null if user not exists
+ * @param {string} email Email to validate
+ * @param {string} password Password to validate
+ * @returns If login was valid with message
+ */
 async function validateLogin(user, email, password) {
     if (!email || !password) {
         return { isValid: false, message: "Fill up all empty fields" };
@@ -118,6 +153,11 @@ async function validateLogin(user, email, password) {
     return { isValid: true, message: "User Logged In" };
 }
 
+/**
+ * Validation for email, used in forgot password
+ * @param {string} email The email to validate
+ * @returns If email was valid with message
+ */
 function validateEmail(email) {
     if (email.length < 15 || email.length > 40) {
         return { isValid: false, message: "Email should be 15-40 characters" };
@@ -129,6 +169,15 @@ function validateEmail(email) {
     return { isValid: true, message: "Valid Email" };
 }
 
+/**
+ * Validate signup of user
+ * @param {string} name Name to validate
+ * @param {string} email Email to validate
+ * @param {string} password Password to validate
+ * @param {string} confirmPassword Confirm password to validate
+ * @param {boolean} termsAccepted Boolean whether terms and conditions was accepted
+ * @returns If signup was valid with message
+ */
 async function validateSignup(name, email, password, confirmPassword, termsAccepted) {
     if (!termsAccepted) {
         return { isValid: false, message: "You did not accept terms and conditions" };
@@ -161,6 +210,13 @@ async function validateSignup(name, email, password, confirmPassword, termsAccep
     return { isValid: true, message: "User Signed Up" };
 }
 
+/**
+ * Validation for quiz information
+ * @param {string} title Title of quiz
+ * @param {string} description Description of quiz
+ * @param {string} topic Topic of quiz
+ * @returns If quiz information was valid with message
+ */
 function validateQuiz(title, description, topic) {
     if (title.length < 5 || title.length > 50) {
         return { isValid: false, message: "Title should be 5-50 characters" };
@@ -184,6 +240,12 @@ function validateQuiz(title, description, topic) {
     return { isValid: true, message: "Quiz is valid" };
 }
 
+/**
+ * Validate item/question information (question, explanation, timer and points)
+ * @param {object} question An object that contains the question/item information that will be validated
+ * @param {number} item The item of question/item in a quiz
+ * @returns If item/question information was valid with message
+ */
 function questionValidationWrapper(question, item) {
     if (question.question.length < 15 || question.question.length > 300) {
         return { isValid: false, message: "Item " + item + ": Question should be 15-300 characters" };
@@ -213,6 +275,12 @@ function questionValidationWrapper(question, item) {
     return { isValid: true, message: "Item " + item + ": Valid" };
 }
 
+/**
+ * Validate information of an item in a multiple choice quiz
+ * @param {object} question An object that contains the question/item information that will be validated
+ * @param {number} item The item of question/item in a quiz
+ * @returns If item/question information was valid with message
+ */
 function validateMultipleChoice(question, item) {
     const initialValidation = questionValidationWrapper(question, item);
     if (!initialValidation.isValid) {
@@ -232,6 +300,12 @@ function validateMultipleChoice(question, item) {
     return { isValid: true, message: "Item " + item + ": Item is valid" };
 }
 
+/**
+ * Validate information of an item in an identification quiz
+ * @param {object} question An object that contains the question/item information that will be validated
+ * @param {number} item The item of question/item in a quiz
+ * @returns If item/question information was valid with message
+ */
 function validateIdentification(question, item) {
     const initialValidation = questionValidationWrapper(question, item);
     if (!initialValidation.isValid) {
@@ -247,6 +321,12 @@ function validateIdentification(question, item) {
     return { isValid: true, message: "Item " + item + ": Item is valid" };
 }
 
+/**
+ * Validate information of an item in a true or false quiz
+ * @param {object} question An object that contains the question/item information that will be validated
+ * @param {number} item The item of question/item in a quiz
+ * @returns If item/question information was valid with message
+ */
 function validateTrueOrFalse(question, item) {
     const initialValidation = questionValidationWrapper(question, item);
     if (!initialValidation.isValid) {
@@ -256,6 +336,14 @@ function validateTrueOrFalse(question, item) {
     return { isValid: true, message: "Item " + item + ": Item is valid" };
 }
 
+/**
+ * Validate the password when user changes his/her password on settings
+ * @param {string} currentPassword The current password from request to validate
+ * @param {string} newPassword The new password to validate
+ * @param {string} confirmPassword The confirm password to validate
+ * @param {string} currentPassword2 The current password of user in database that will be used to check current password from request matches
+ * @returns If password change was valid with message
+ */
 async function validatePassword(currentPassword, newPassword, confirmPassword, currentPassword2) {
     if (!currentPassword || !newPassword || !confirmPassword) {
         return { isValid: false, message: "Fill up empty fields" };
@@ -273,6 +361,11 @@ async function validatePassword(currentPassword, newPassword, confirmPassword, c
     return { isValid: true, message: "Password changed" };
 }
 
+/**
+ * Validate username when user changes his/her name on settings
+ * @param {string} name The name to validate
+ * @returns If username was valid with message
+ */
 function validateUsername(name) {
     if (name.length < 5 || name.length > 20) {
         return { isValid: false, message: "Username should be 5-20 characters" };
@@ -284,6 +377,11 @@ function validateUsername(name) {
     return { isValid: true, message: "Username changed" };
 }
 
+/**
+ * Validate role when user changes his/her role on settings
+ * @param {string} name The role to validate
+ * @returns If role was valid with message
+ */
 function validateRole(role) {
     if (role.length < 5 || role.length > 50) {
         return { isValid: false, message: "Role should be 5-50 characters" };
@@ -292,6 +390,14 @@ function validateRole(role) {
     return { isValid: true, message: "Role changed" };
 }
 
+/**
+ * Validate password change when user forgot password
+ * @param {string} userCode The code stored in user's database that used to check for matches in entered code
+ * @param {string} code The code to validate
+ * @param {string} password The new password to validate
+ * @param {string} confirmPassword The confirm password to validate
+ * @returns If code and password was valid with message
+ */
 function validateForgotPassword(userCode, code, password, confirmPassword) {
     if (code != userCode) {
         return { isValid: false, message: "Invalid Code" };
@@ -306,12 +412,23 @@ function validateForgotPassword(userCode, code, password, confirmPassword) {
     return { isValid: true, message: "Password changed successfully" };
 }
 
+/**
+ * Validations for quiz and questions/items informations
+ * @param {Array<object>} questions An array of item/question objects that will be validated
+ * @param {object} quiz An object that contains the quiz information to validate
+ * @param {function(object, number): object} validator Callback function validator for items/questions
+ * @returns An array of quiz and items/questions validations (is valid) with message
+ */
 function getValidations(questions, quiz, validator) {
     const itemValidations = questions.map((question, idx) => validator(question, idx + 1));
     const quizValidation = validateQuiz(quiz.name, quiz.description, quiz.topic);
     return [quizValidation, ...itemValidations];
 }
 
+/**
+ * Get the callback functions for getting quiz questions/items from id of questions/items base on type
+ * @returns An object that contains callback functions
+ */
 function getQuestions() {
     return {
         "Multiple Choice": async (questions_id) => {
@@ -344,6 +461,10 @@ function getQuestions() {
     };
 }
 
+/**
+ * Get the callback functions for removing quiz questions/items from id of questions/items base on type
+ * @returns An object that contains callback functions
+ */
 function removeQuestions() {
     return {
         "Multiple Choice": async (questions_id, transaction) => {
@@ -379,6 +500,11 @@ function removeQuestions() {
     };
 }
 
+/**
+ * Convert MultipleChoice sequelize model to object
+ * @param {MultipleChoice} question The model to convert
+ * @returns Object with the question/item information
+ */
 function mapMultipleChoice(question) {
     return {
         question_id: question.question_id,
@@ -394,6 +520,11 @@ function mapMultipleChoice(question) {
     };
 }
 
+/**
+ * Convert Identification sequelize model to object
+ * @param {Identification} question The model to convert
+ * @returns Object with the question/item information
+ */
 function mapIdentification(question) {
     return {
         question_id: question.question_id,
@@ -405,6 +536,11 @@ function mapIdentification(question) {
     };
 }
 
+/**
+ * Convert TrueOrFalse sequelize model to object
+ * @param {TrueOrFalse} question The model to convert
+ * @returns Object with the question/item information
+ */
 function mapTrueOrFalse(question) {
     return {
         question_id: question.question_id,
@@ -416,6 +552,11 @@ function mapTrueOrFalse(question) {
     };
 }
 
+/**
+ * Convert QuizAnswer sequelize model to object
+ * @param {QuizAnswer} answer The model to convert
+ * @returns Object with the quiz answer information
+ */
 async function mapAnswer(answer) {
     return {
         quiz_answer_id: answer.quiz_answer_id,
@@ -428,6 +569,11 @@ async function mapAnswer(answer) {
     };
 }
 
+/**
+ * Get the user information from user id
+ * @param {number} userId The id of user
+ * @returns User information
+ */
 async function getUser(userId) {
     if (userId === 0) {
         return {
@@ -445,16 +591,29 @@ async function getUser(userId) {
     }
 }
 
+/**
+ * Delete/remove the file from the directory
+ * @param {Express.Multer.File} file The file to delete
+ */
 function deleteFile(file) {
     if (file) {
         fs.unlinkSync(`${relativePath}${quizImagePath}/${file.filename}`);
     }
 }
 
+/**
+ * Get the quiz from request
+ * @param {Express.Request} req A server request use for getting the quiz
+ * @returns An object that contains the quiz information
+ */
 async function getQuiz(req) {
+    // get the object of callback functions responsible for getting the questions/items base on quiz type
     const actions = getQuestions();
+    // get the quiz
     const quiz = await Quiz.findOne({where: {quiz_id: req.query.quiz_id}});
+    // get the quiz's questions/items
     const questions = await actions[quiz.type](quiz.questions_id.split("|").map(id => Number(id)));
+    // return the quiz and its items/questions
     return {
         quiz_id: quiz.quiz_id,
         user: await getUser(quiz.user_id),
@@ -469,6 +628,12 @@ async function getQuiz(req) {
     };
 }
 
+/**
+ * Send mail with the code to user
+ * @param {string} recipient The email address of user that will receive the mail
+ * @param {string} code The code that will be send with the mail
+ * @returns Information about the sent mail
+ */
 async function sendEmail(recipient, code) {
     return await nodemailer.createTransport({
         service: 'Gmail',
@@ -484,6 +649,12 @@ async function sendEmail(recipient, code) {
     });
 }
 
+/**
+ * Check whether the user answered the quiz
+ * @param {number} quiz_id Id of the quiz answered
+ * @param {number} user_id User answered the quiz
+ * @returns Whether the user answered the quiz
+ */
 async function isQuizAnswered(quiz_id, user_id) {
     return (await QuizAnswer.findOne({where: {quiz_id: quiz_id, user_id: user_id}})) ? true : false;
 }

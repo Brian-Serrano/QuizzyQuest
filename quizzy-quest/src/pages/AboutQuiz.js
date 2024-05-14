@@ -18,6 +18,7 @@ export default function AboutQuiz() {
     const [modalState, setModalState] = useState(0);
     const [process, setProcess] = useState({state: ProcessState.Loading, message: ""});
 
+    // function for getting the created quiz and the user's answers
     const getQuiz = async () => {
         try {
             const response = await fetch(`${BASE_URL}/quiz-routes/get-created-quiz?quiz_id=${id}`, {
@@ -46,10 +47,12 @@ export default function AboutQuiz() {
         }
     }
 
+    // get the quiz and user's answers on the mount of page
     useEffect(() => {
         getQuiz();
     }, []);
 
+    // function that returns the component base on what the current process state
     const getProcess = (process) => {
         switch (process.state) {
             case ProcessState.Loading:

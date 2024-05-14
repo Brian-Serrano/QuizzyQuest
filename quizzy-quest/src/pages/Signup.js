@@ -47,6 +47,7 @@ export default function Signup() {
 
     const [tab, setTab] = useState(true);
 
+    // function that should be invoked when the user signup
     const signup = async () => {
         setSignupState(prev => ({...prev, buttonEnabled: false}));
 
@@ -78,6 +79,7 @@ export default function Signup() {
         }
     };
 
+    // function that should be invoked when the user login
     const login = async () => {
         setLoginState(prev => ({...prev, buttonEnabled: false}));
 
@@ -107,6 +109,7 @@ export default function Signup() {
         }
     };
 
+    // function that should be invoked when the user click the forgot password text
     const forgotPassword = async () => {
         setLoginState(prev => ({...prev, forgotLinkEnabled: false}));
 
@@ -131,6 +134,7 @@ export default function Signup() {
         }
     };
 
+    // function that should be invoked when the user apply the new/changed password
     const changePassword = async () => {
         try {
             const response = await fetch(`${BASE_URL}/auth-routes/change-password`, {
@@ -165,12 +169,14 @@ export default function Signup() {
         }
     };
 
+    // change the values on signup fields
     const setSignup = (event, key) => {
         setSignupState(prev => {
             return {...prev, [key]: event.target.value};
         });
     };
 
+    // change the values on login fields
     const setLogin = (event, key) => {
         setLoginState(prev => {
             return {...prev, [key]: event.target.value};

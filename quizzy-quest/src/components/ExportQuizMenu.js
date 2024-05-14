@@ -3,6 +3,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 
+/**
+ * This component contains a modal where the user can select what type of file the quiz to be exported (component includes own states) and an export quiz button.
+ * @param {object} props an object that contains quizName (name of the file of exported quiz) and data (contains array of question/item object that contains question, answer, timer etc.)
+ * @returns JSX Element
+ */
 export default function ExportQuizMenu(props) {
     const [menuState, setMenuState] = useState({
         filetype: "xlsx",

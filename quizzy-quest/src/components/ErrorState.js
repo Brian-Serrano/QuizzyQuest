@@ -1,6 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
+/**
+ * A component used when the process state is error or server request return failure/error response and no data has received and be shown in user interface.
+ * @param {object} props an object with two properties (onRefresh and error). error is a message/text about the error and onRefresh is a callback function that should trigger refresh to page/tab when refresh button clicked.
+ * @returns JSX Element
+ */
 export default function ErrorState(props) {
     return (
         <div className="container-fluid">

@@ -3,6 +3,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import { IMAGE_BASE_URL } from "../utils/constants";
 import SpeechSynthesis from "./SpeechSynthesis";
 
+/**
+ * Used in about quiz and profile page as a container for showing the user's answer to a quiz
+ * @param {object} props an object with two properties (quiz and answer). The quiz is what used for background image with quiz name as the alt name in the carousel inside modal. The answer is the answer of a user to the quiz (includes questions, answers, points, time remainings, and the user)
+ * @returns JSX Element
+ */
 export default function CarouselInsideModal(props) {
     return (
         <div className="modal fade" id="staticBackdrop" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

@@ -5,6 +5,11 @@ import * as XLSX from "xlsx";
 import { QuizType } from "../utils/enums";
 import MyToast from "./MyToast";
 
+/**
+ * A component used for importing spreadsheet and add to quiz input fields. It contains a modal where the user can customize the content of spreadsheet, how it should be placed on items fields, a file input where the user can get spreadsheet and toast message for error (file not allowed). The component has its own states.
+ * @param {object} props An object that contains two callback functions. replaceFields and appendFields will receive the data (an array of objects) that will be placed on quiz input fields and a type that should be change in quiz base on the selected quiz type of user in modal. replaceFields will replace the existing items with the data received while appendFields will add/append the received data to the last.
+ * @returns JSX Element
+ */
 export default function ImportSpreadsheetMenu(props) {
     const [result, setResult] = useState([]);
     const [modalState, setModalState] = useState(false);

@@ -22,6 +22,7 @@ export default function Dashboard() {
     const [createdTrueOrFalse, setCreatedTrueOrFalse] = useState(emptyData());
     const [tab, setTab] = useState({type: QuizType.MultipleChoice, creator: Creator.All});
 
+    // wrapper for requesting server for getting the quizzes
     const apiCallWrapper = async (creator, type) => {
         try {
             const response = await fetch(`${BASE_URL}/quiz-routes/get-all${creator}quiz?type=${type}`, {
@@ -39,6 +40,7 @@ export default function Dashboard() {
         }
     };
 
+    // get created multiple choice quiz
     const scmc = async () => {
         setCreatedMultipleChoice(emptyData());
         setCreatedMultipleChoice(
@@ -49,6 +51,7 @@ export default function Dashboard() {
         );
     };
 
+    // get created identification quiz
     const sci = async () => {
         setCreatedIdentification(emptyData());
         setCreatedIdentification(
@@ -59,6 +62,7 @@ export default function Dashboard() {
         );
     };
 
+    // get created true or false quiz
     const sctof = async () => {
         setCreatedTrueOrFalse(emptyData());
         setCreatedTrueOrFalse(
@@ -69,6 +73,7 @@ export default function Dashboard() {
         );
     };
 
+    // get other's multiple choice quiz
     const smc = async () => {
         setMultipleChoice(emptyData());
         setMultipleChoice(
@@ -79,6 +84,7 @@ export default function Dashboard() {
         );
     };
 
+    // get other's identification quiz
     const si = async () => {
         setIdentification(emptyData());
         setIdentification(
@@ -89,6 +95,7 @@ export default function Dashboard() {
         );
     };
 
+    // get other's true or false quiz
     const stof = async () => {
         setTrueOrFalse(emptyData());
         setTrueOrFalse(
@@ -99,6 +106,7 @@ export default function Dashboard() {
         );
     };
 
+    // invoke all functions that get different quizzes on the mount of page
     const apiCalls = [scmc, sci, sctof, smc, si, stof];
     useEffect(() => {
         apiCalls.forEach(func => {
@@ -106,12 +114,16 @@ export default function Dashboard() {
         });
     }, []);
 
+    // navigate to user's (quiz creator) profile
     const onProfileNavigate = (userId) => onNavigate(`/profile/${userId}`);
 
+    // navigate to answering quiz when the quiz is not created by the user
     const onQuizNavigate = (quizId) => onNavigate(`/answer-quiz/${quizId}`);
 
+    // navigate to about quiz when the quiz is created by the user
     const onAboutQuizNavigate = (quizId) => onNavigate(`/about-quiz/${quizId}`);
 
+    // check what card to use (card that also show the user created it)
     const mapToQuizCard = (quiz, creator) => {
         return creator === Creator.All ? <QuizCard
             key={quiz}
@@ -125,10 +137,12 @@ export default function Dashboard() {
         />;
     };
 
+    // get the data to show (e.g. created multiple choice quizzes or other's multiple choice quiz)
     const getCreator = (creator, first, second) => {
         return creator === Creator.Self ? first : second;
     };
 
+    // show a component base on the current process state
     const checkProcess = (data, creator) => {
         switch (data.process) {
             case ProcessState.Loading:
@@ -149,6 +163,7 @@ export default function Dashboard() {
         }
     };
 
+    // get the quizzes to show (multiple choice, identification, true or false) (created by self, created by others)
     const getMenu = (type, creator) => {
         switch(type) {
             case QuizType.MultipleChoice:

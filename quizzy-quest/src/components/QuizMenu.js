@@ -3,6 +3,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import SpeechSynthesis from "./SpeechSynthesis";
 
+/**
+ * A menu in answer quiz page where you can see the timer, question, item, points, explanation of question/item.
+ * @param {object} props An object that contains the following properties: item, question, onError, children. item is the item number starting from 0. question is an object where it contains everything about the item (question, timer, answer, user's answer, time remaining etc.). onError is used by the speech synthesis (text to speech) if something error happen. children is a JSX element that will be displayed below question and above explanation and should be MultipleChoiceMenu, IdentificationMenu, TrueOrFalseMenu where the user can provide answer.
+ * @returns JSX Element
+ */
 export default function QuizMenu(props) {
     return (
         <div>

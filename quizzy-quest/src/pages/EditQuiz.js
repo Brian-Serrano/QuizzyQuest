@@ -21,6 +21,7 @@ export default function EditQuiz() {
     const id = useLoaderData();
     const onNavigate = useNavigate();
 
+    // add an item to quiz with empty/default values
     const createItem = () => {
         return {
             question: "",
@@ -43,6 +44,7 @@ export default function EditQuiz() {
     const [process, setProcess] = useState({state: ProcessState.Loading, message: ""});
     const [modalState, setModalState] = useState(false);
 
+    // 
     const mapQuestions = (question) => {
         switch (quizState.type) {
             case QuizType.MultipleChoice:
@@ -76,6 +78,7 @@ export default function EditQuiz() {
         }
     };
 
+    // function that will get the quiz and its questions/item that will be edited
     const getQuizToEdit = async () => {
         try {
             const response = await fetch(`${BASE_URL}/quiz-routes/get-quiz-to-edit?quiz_id=${id}`, {
@@ -118,6 +121,7 @@ export default function EditQuiz() {
         }
     };
 
+    // function that should be invoked when the user want to save the edited quiz
     const updateQuiz = async () => {
         setQuizState(prev => ({...prev, buttonEnabled: false}));
 
@@ -152,6 +156,7 @@ export default function EditQuiz() {
         }
     }
 
+    // function that should be invoked when the user delete the quiz
     const deleteQuiz = async () => {
         setQuizState(prev => ({...prev, deleteButtonEnabled: false}));
 
@@ -174,14 +179,17 @@ export default function EditQuiz() {
         }
     };
 
+    // get the quiz that will be edited on the mount of page
     useEffect(() => {
         getQuizToEdit();
     }, []);
 
+    // change quiz visibility
     const changeVisibility = (event) => {
         changeQuizInfo(event, "visibility");
     };
 
+    // change the value of quiz information
     const changeQuizInfo = (event, key) => {
         setQuizState(prev => {
             return {
@@ -191,12 +199,14 @@ export default function EditQuiz() {
         });
     };
 
+    // change the value of an item/question information
     const changeQuestions = (event, key, index) => {
         setQuestionsState(prev => {
             return prev.map((q, idx) => index === idx ? {...q, [key]: event.target.value} : q);
         });
     };
 
+    // get the component to show base on the current process state
     const getProcess = (process) => {
         switch (process.state) {
             case ProcessState.Loading:

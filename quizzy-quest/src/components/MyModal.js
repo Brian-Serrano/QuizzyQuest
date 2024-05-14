@@ -1,6 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
+/**
+ * Commonly used modal on the application
+ * @param {object} props An object that contains modalState. modalState is an object that contains the following properties. titleText is the header text for the modal. bodyText is a JSX Element (or text its okay). buttonText is the text of button. onCancelClick is a callback function that should close the modal. onApplyClick is a callback function that should do an action (e.g. request server) and close the modal.
+ * @returns JSX Element
+ */
 export default function MyModal(props) {
     return (
         <div className="modal d-block" tabIndex="-1" style={{backgroundColor: "rgba(0,0,0,0.4)"}}>

@@ -1,6 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
+/**
+ * A menu shown on the top of menu in answer quiz page. It contains information such as title, topic, type and progress of quiz (number of items answered)
+ * @param {object} props An object containing title, topic, type and percentage of answered items over total items.
+ * @returns JSX Element
+ */
 export default function QuizHeader(props) {
     return (
         <div className="m-3">

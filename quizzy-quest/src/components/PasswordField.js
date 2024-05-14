@@ -2,6 +2,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
+/**
+ * A text input field used for passwords
+ * @param {object} props An object that contains placeholder, type (password), name, value, onChange (responsible for changes of text input field value), onClick (for toggling type (text/password)) for the input field.
+ * @returns JSX Element
+ */
 export default function PasswordField(props) {
     return (
         <div>

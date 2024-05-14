@@ -2,6 +2,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
+/**
+ * A menu in answer quiz page where the user can provide answer for multiple choice questions. Should be wrapped inside QuizMenu component.
+ * @param {object} props An object that contains question (an object used when user answer quiz), selectAnswer (callback function responsible for selecting answer (mark it as answered, check the answer and add points if correct))
+ * @returns JSX Element
+ */
 export default function MultipleChoiceMenu(props) {
     const mark = (choice) => {
         return choice === props.question.user_answer ? 
